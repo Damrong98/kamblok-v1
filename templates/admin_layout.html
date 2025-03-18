@@ -1,0 +1,83 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>{% block title %}{% endblock %}</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    {% block style %}{% endblock %}
+</head>
+<body>
+    
+    <main class="layout_container">
+        <!-- Sidebar -->
+        <div id="sidebar" class="sidebar hide_sidebar d-flex flex-column justify-content-between gap-1">
+            <div class="sidebar_header">
+                <!-- <span style="font-size: 20px; cursor: pointer; margin-right: 10px;" onclick="toggleMenu()" class="menu-icon">&#9776;</span> -->
+                <div class="appLogo">
+
+                </div>
+            </div>
+            <div class="sidebar_container">
+                <a 
+                    class="btn btn-primary" 
+                    href="{{ url_for('user_conversation_routes.user_new_chat') }}"
+                >New chat</a>
+            </div>
+            <div class="sidebar_container flex-grow-1">
+                <div id="conversations-container2">
+                    <a 
+                        class="" 
+                        href="{{ url_for('admin_system_settings_routes.system_settings') }}"
+                    >System settings</a>
+                    <a 
+                        class="" 
+                        href="{{ url_for('admin_user_routes.user') }}"
+                    >User</a>
+                    <a 
+                        class="" 
+                        href="{{ url_for('admin_prompt_routes.prompt') }}"
+                    >Prompt</a>
+                    <div class="ms-3">
+                        <a 
+                            class="" 
+                            href="{{ url_for('admin_category_routes.category') }}"
+                        >Category</a>
+                        <a 
+                            class="" 
+                            href="{{ url_for('admin_language_routes.language') }}"
+                        >Language</a>
+                    </div>
+                </div>
+            </div>
+            <div class="sidebar_container mb-4">
+                <a 
+                    class="btn btn-primary" 
+                >Setting</a>
+            </div>
+        </div>
+        <!-- Sidebar Overlay -->
+        <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
+
+        <!-- Start content -->
+        <div id="contentBody" class="content_body show_content bg-light">
+            <!-- Header -->
+            {% include "layouts/Header.html" %}
+
+            <!-- Content -->
+            {% block content %}
+            
+            {% endblock %}
+        </div>
+
+    </main>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script src="{{ url_for('static', filename='js/layout.js') }}"></script>
+    <script src="{{ url_for('static', filename='js/layout_api.js') }}"></script>
+
+    {% block script %}{% endblock %}
+
+</body>
+</html>

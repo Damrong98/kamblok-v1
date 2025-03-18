@@ -1,0 +1,101 @@
+<!-- templates/admin/system_settings/system_settings.html -->
+
+{% extends "admin_layout.html" %}
+
+{% block title %}Language Manager{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1 class="mb-4">System Settings</h1>
+
+        <!-- Settings Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Edit System Settings</h5>
+                <form id="settingsForm">
+                    <div class="mb-3">
+                        <label for="maxMessages" class="form-label">Max Messages</label>
+                        <input type="number" class="form-control" id="maxMessages" min="0" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="logoHTML" class="form-label">Logo Html</label>
+                        <textarea class="form-control" id="logoHTML"></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Registration Counts</label>
+                        <div class="row">
+                            <div class="col-md-3">
+                                <p>Email: <span id="emailCount"></span></p>
+                            </div>
+                            <div class="col-md-3">
+                                <p>Google: <span id="googleCount"></span></p>
+                            </div>
+                            <div class="col-md-3">
+                                <p>Phone: <span id="phoneCount"></span></p>
+                            </div>
+                            <div class="col-md-3">
+                                <p>Total: <span id="totalCount"></span></p>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label class="form-label">Timestamps</label>
+                        <p>Created: <span id="createdAt"></span></p>
+                        <p>Updated: <span id="updatedAt"></span></p>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Update</button>
+                </form>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadSettings();
+
+            // Form submission
+            document.getElementById('settingsForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const data = {
+                    max_messages: document.getElementById('maxMessages').value,
+                    logo_html: document.getElementById('logoHTML').value
+                };
+
+                try {
+                    const response = await fetch('/admin/api/system_settings', {
+                        method: 'PUT',
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error);
+                    alert(result.message);
+                    loadSettings();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            });
+
+            // Load settings
+            async function loadSettings() {
+                try {
+                    const response = await fetch('/admin/api/system_settings');
+                    const settings = await response.json();
+                    
+                    document.getElementById('maxMessages').value = settings.max_messages;
+                    document.getElementById('logoHTML').value = settings.logo_html;
+                    document.getElementById('emailCount').textContent = settings.email_registered_count;
+                    document.getElementById('googleCount').textContent = settings.google_registered_count;
+                    document.getElementById('phoneCount').textContent = settings.phone_registered_count;
+                    document.getElementById('totalCount').textContent = settings.total_registered_count;
+                    document.getElementById('createdAt').textContent = new Date(settings.created_at).toLocaleString();
+                    document.getElementById('updatedAt').textContent = new Date(settings.updated_at).toLocaleString();
+                } catch (error) {
+                    alert('Error loading settings: ' + error.message);
+                }
+            }
+        });
+    </script>
+{% endblock %}

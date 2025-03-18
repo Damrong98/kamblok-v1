@@ -1,0 +1,101 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}kamblok{% endblock %}
+
+{% block script %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center">Edit User: {{ user.username }}</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    
+    <div class="card shadow-sm p-4">
+        <form method="POST">
+            <div class="mb-3">
+                <label class="form-label">Username:</label>
+                <input type="text" class="form-control" name="username" value="{{ user.username }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Email:</label>
+                <input type="email" class="form-control" name="email" value="{{ user.email }}" required>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Picture URL:</label>
+                <input type="text" class="form-control" name="picture" value="{{ user.picture }}">
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Role:</label>
+                <select class="form-select" name="role">
+                    <option value="1" {% if user.role == 1 %}selected{% endif %}>Admin</option>
+                    <option value="2" {% if user.role == 2 %}selected{% endif %}>Editor</option>
+                    <option value="3" {% if user.role == 3 %}selected{% endif %}>User</option>
+                </select>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">Max Messages:</label>
+                <input type="number" class="form-control" name="max_messages" value="{{ user.max_messages }}" required>
+            </div>
+            <div class="form-check mb-3">
+                <input type="checkbox" class="form-check-input" name="is_active" {% if user.is_active %}checked{% endif %}>
+                <label class="form-check-label">Active</label>
+            </div>
+            <div class="mb-3">
+                <label class="form-label">New Password (optional):</label>
+                <input type="password" class="form-control" name="password">
+            </div>
+            <button type="submit" class="btn btn-primary">Update User</button>
+        </form>
+    </div>
+</div>
+    <!-- <h1>Edit User: {{ user.username }}</h1>
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }}">{{ message }}</div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
+    <form method="POST">
+        <div>
+            <label>Username:</label>
+            <input type="text" name="username" value="{{ user.username }}" required>
+        </div>
+        <div>
+            <label>Email:</label>
+            <input type="email" name="email" value="{{ user.email }}" required>
+        </div>
+        <div>
+            <label>Picture URL:</label>
+            <input type="text" name="picture" value="{{ user.picture }}">
+        </div>
+        <div>
+            <label>Role:</label>
+            <select name="role">
+                <option value="1" {% if user.role == 1 %}selected{% endif %}>Admin</option>
+                <option value="2" {% if user.role == 2 %}selected{% endif %}>Editor</option>
+                <option value="3" {% if user.role == 3 %}selected{% endif %}>User</option>
+            </select>
+        </div>
+        <div>
+            <label>Max Messages:</label>
+            <input type="number" name="max_messages" value="{{ user.max_messages }}" required>
+        </div>
+        <div>
+            <label>Active:</label>
+            <input type="checkbox" name="is_active" {% if user.is_active %}checked{% endif %}>
+        </div>
+        <div>
+            <label>New Password (optional):</label>
+            <input type="password" name="password">
+        </div>
+        <button type="submit">Update User</button>
+    </form> -->
+{% endblock %}

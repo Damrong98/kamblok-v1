@@ -1,0 +1,72 @@
+{% extends "layout.html" %}
+
+{% block title %}settings{% endblock %}
+
+{% block script %}
+
+{% endblock %}
+
+{% block content %}
+    <div class="container py-4">
+        <h3 class="mb-4">Settings</h3>
+        <h5 class="mb-2">Profile</h5>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row g-3">
+                    <!-- <div class="col-12 border-bottom pb-2">
+                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">ID:</span>
+                        <span>{{ user.id }}</span>
+                    </div> -->
+                    <div class="col-12 border-bottom pb-2">
+                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Display Name:</span>
+                        <span>{{ user.displayName }}</span>
+                    </div>
+                    <div class="col-12 border-bottom pb-2">
+                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Username:</span>
+                        <span>{{ user.username }}</span>
+                    </div>
+                    <div class="col-12 border-bottom pb-2">
+                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Email:</span>
+                        <span>{{ user.email }}</span>
+                    </div>
+                    <div class="col-12 border-bottom pb-2">
+                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Created:</span>
+                        <span>{{ user.created_at}}</span>
+                    </div>
+                    <div class="col-12 border-bottom pb-2">
+                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Status:</span>
+                        <span class="badge {{ 'bg-success' if user.is_active else 'bg-danger' }} rounded-pill">
+                            {{ 'Active' if user.is_active else 'Inactive' }}
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <h5 class="mb-2 mt-4 pt-2">Your account</h5>
+        <div class="card shadow-sm">
+            <div class="card-body">
+                <div class="row g-3">
+                    <div class="col-12 border-bottom pb-2">
+                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Message Limit:</span>
+                        <span class="badge bg-info rounded-pill">
+                            {{ user.message_limit }}/{{ user.max_messages_today }}
+                        </span>
+                    </div>
+                    <div class="col-12 border-bottom pb-2">
+                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Clear chat histories:</span>
+                        <span class="badge bg-danger rounded-pill">
+                            Clear history
+                        </span>
+                    </div>
+                    <div class="col-12 pb-2">
+                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Delete account:</span>
+                        <span class="badge bg-danger rounded-pill">
+                            Delete account
+                        </span>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}

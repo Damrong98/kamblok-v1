@@ -1,0 +1,16 @@
+{% extends "layout.html" %}
+
+{% block title %}kamblok{% endblock %}
+
+{% block script %}
+
+{% endblock %}
+
+{% block content %}
+    <div>{{ current_user.username }}</div>
+    <div>
+        {% for convo in conversations %}
+            <li>{{ convo.title }} (Created: {{ convo.created_at }})</li>
+        {% endfor %}
+    </div>
+{% endblock %}

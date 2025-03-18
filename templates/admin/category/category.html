@@ -1,0 +1,165 @@
+<!-- templates/admin/category/category.html -->
+
+{% extends "admin_layout.html" %}
+
+{% block title %}Category Manager{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1 class="mb-4">Category Manager</h1>
+
+        <!-- Create/Update Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Add/Edit Category</h5>
+                <form id="categoryForm">
+                    <input type="hidden" id="categoryId">
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="description" class="form-label">Description</label>
+                        <textarea class="form-control" id="description"></textarea>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
+                    <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Categories List -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Categories</h5>
+                <table class="table table-striped" id="categoriesTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Description</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+
+{% endblock %}
+
+{% block script %}
+
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        loadCategories();
+
+        // Form submission
+        document.getElementById('categoryForm').addEventListener('submit', async function(e) {
+            e.preventDefault();
+            const id = document.getElementById('categoryId').value;
+            const data = {
+                name: document.getElementById('name').value,
+                description: document.getElementById('description').value
+            };
+
+            const method = id ? 'PUT' : 'POST';
+            const url = id ? `/admin/api/categories/${id}` : '/admin/api/categories';
+
+            try {
+                const response = await fetch(url, {
+                    method: method,
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify(data)
+                });
+                const result = await response.json();
+                if (!response.ok) throw new Error(result.error);
+                alert(result.message);
+                clearForm();
+                loadCategories();
+            } catch (error) {
+                alert('Error: ' + error.message);
+            }
+        });
+
+        // Clear form
+        document.getElementById('clearBtn').addEventListener('click', clearForm);
+
+        // Load categories
+        async function loadCategories() {
+            try {
+                const response = await fetch('/admin/api/categories');
+                const categories = await response.json();
+                const tbody = document.querySelector('#categoriesTable tbody');
+                tbody.innerHTML = '';
+                categories.forEach(category => {
+                    const tr = document.createElement('tr');
+                    tr.innerHTML = `
+                        <td>${category.name}</td>
+                        <td>${category.description || ''}</td>
+                        <td>${new Date(category.created_at).toLocaleDateString()}</td>
+                        <td>
+                            <button class="btn btn-sm btn-primary edit-btn" data-id="${category.id}">Edit</button>
+                            <button class="btn btn-sm btn-danger delete-btn" data-id="${category.id}">Delete</button>
+                        </td>
+                    `;
+                    tbody.appendChild(tr);
+                });
+
+                // Add event listeners to buttons
+                document.querySelectorAll('.edit-btn').forEach(btn => {
+                    btn.addEventListener('click', handleEdit);
+                });
+                document.querySelectorAll('.delete-btn').forEach(btn => {
+                    btn.addEventListener('click', handleDelete);
+                });
+            } catch (error) {
+                alert('Error loading categories: ' + error.message);
+            }
+        }
+
+        // Edit handler
+        async function handleEdit(e) {
+            const id = e.target.dataset.id;
+            try {
+                const response = await fetch(`/admin/api/categories/${id}`);
+                const category = await response.json();
+                document.getElementById('categoryId').value = category.id;
+                document.getElementById('name').value = category.name;
+                document.getElementById('description').value = category.description;
+                document.getElementById('submitBtn').textContent = 'Update';
+            } catch (error) {
+                alert('Error loading category: ' + error.message);
+            }
+        }
+
+        // Delete handler
+        async function handleDelete(e) {
+            if (confirm('Are you sure you want to delete this category?')) {
+                const id = e.target.dataset.id;
+                try {
+                    const response = await fetch(`/admin/api/categories/${id}`, {
+                        method: 'DELETE'
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error);
+                    alert(result.message);
+                    loadCategories();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            }
+        }
+
+        // Clear form function
+        function clearForm() {
+            document.getElementById('categoryForm').reset();
+            document.getElementById('categoryId').value = '';
+            document.getElementById('submitBtn').textContent = 'Save';
+        }
+    });
+</script>
+{% endblock %}

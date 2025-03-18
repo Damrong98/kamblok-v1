@@ -1,0 +1,298 @@
+<!-- registration.html -->
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Registration</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
+    <style>
+       
+    </style>
+</head>
+<body>
+    <div class="auth-container">
+        <!-- Step 1: Enter Email -->
+        <div id="step1" class="step active">
+            <h1 class="text-center">Register - Step 1</h1>
+            <p class="subtitle text-center">Enter your email address</p>
+            <div id="alert-container-step1"></div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email*</label>
+                <input type="email" class="form-control" id="email" required value="{{ session.get('registration_email', '') }}">
+            </div>
+            <button id="nextStep1" class="btn btn-primary w-100">Next</button>
+            <div class="footer-links">
+                <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+
+        <!-- Step 2: Verify Email -->
+        <div id="step2" class="step">
+            <h1 class="text-center">Check your inbox</h1>
+            <p class="subtitle text-center">Enter the verification code we sent to <span id="email-display-step2"></span></p>
+            <div id="alert-container-step2"></div>
+            <div class="mb-3">
+                <input type="text" class="form-control" id="email_code" placeholder="Code" required>
+                <div id="countdown" class="countdown text-center">Code expires in: <span id="timer">2:00</span></div>
+            </div>
+            <button id="nextStep2" class="btn btn-success w-100">Next</button>
+            <button id="prevStep2" class="btn btn-secondary w-100">Previous</button>
+            <a id="resendLink" href="#" class="resend-link text-center">Resend email</a>
+            <div class="footer-links">
+                <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+
+        <!-- Step 3: Complete Registration -->
+        <div id="step3" class="step">
+            <h1 class="text-center">Complete Registration</h1>
+            <p class="subtitle text-center">Finish setting up your account for <span id="email-display-step3"></span></p>
+            <div id="alert-container-step3"></div>
+            <div class="mb-3">
+                <label for="first_name" class="form-label">First Name*</label>
+                <input type="text" class="form-control" id="first_name" required>
+            </div>
+            <div class="mb-3">
+                <label for="last_name" class="form-label">Last Name*</label>
+                <input type="text" class="form-control" id="last_name" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password*</label>
+                <input type="password" class="form-control" id="password" required>
+            </div>
+            <div class="mb-3">
+                <label for="confirm_password" class="form-label">Confirm Password*</label>
+                <input type="password" class="form-control" id="confirm_password" required>
+            </div>
+            <button id="submitStep3" class="btn btn-primary w-100">Register</button>
+            <button id="prevStep3" class="btn btn-secondary w-100">Previous</button>
+            <div class="footer-links">
+                <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
+            </div>
+        </div>
+    </div>
+
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        const registerEmailApi = '{{ url_for("auth_email.register_email_api") }}';
+        const sendCodeUrl = '{{ url_for("auth_email.send_verification_code") }}';
+        const verifyCodeUrl = '{{ url_for("auth_email.verify_code") }}';
+        const completeRegistrationApi = '{{ url_for("auth_email.complete_registration_api") }}';
+
+        let currentStep = 1;
+        let email = localStorage.getItem('registrationEmail') || '{{ session.get("registration_email", "") }}';
+        let timeLeft;
+
+        // Step elements
+        const steps = {
+            1: document.getElementById('step1'),
+            2: document.getElementById('step2'),
+            3: document.getElementById('step3')
+        };
+        const alertContainers = {
+            1: document.getElementById('alert-container-step1'),
+            2: document.getElementById('alert-container-step2'),
+            3: document.getElementById('alert-container-step3')
+        };
+
+        function showStep(stepNumber) {
+            Object.values(steps).forEach(step => step.classList.remove('active'));
+            steps[stepNumber].classList.add('active');
+            currentStep = stepNumber;
+        }
+
+        function showAlert(step, message, type) {
+            alertContainers[step].innerHTML = `
+                <div class="alert alert-${type} alert-dismissible fade show">
+                    ${message}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            `;
+        }
+
+        // Step 1: Email Submission
+        document.getElementById('nextStep1').addEventListener('click', async function(e) {
+            e.preventDefault();
+            const emailInput = document.getElementById('email').value.trim();
+
+            if (!emailInput) {
+                showAlert(1, 'Email is required', 'danger');
+                return;
+            }
+
+            try {
+                const response = await fetch(registerEmailApi, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: emailInput })
+                });
+                const data = await response.json();
+
+                alertContainers[1].innerHTML = '';
+                if (response.ok) {
+                    email = emailInput;
+                    localStorage.setItem('registrationEmail', email);
+                    document.getElementById('email-display-step2').textContent = email;
+                    document.getElementById('email-display-step3').textContent = email;
+                    showAlert(1, data.message, 'success');
+                    setTimeout(() => showStep(2), 1500);
+                    initVerification();
+                } else {
+                    showAlert(1, data.error, 'danger');
+                }
+            } catch (error) {
+                showAlert(1, 'Network error. Please try again.', 'danger');
+            }
+        });
+
+        // Step 2: Verify Email
+        async function initVerification() {
+            try {
+                const response = await fetch(`${sendCodeUrl}?email=${encodeURIComponent(email)}`);
+                const data = await response.json();
+
+                alertContainers[2].innerHTML = '';
+                if (response.ok) {
+                    timeLeft = data.expires_in;
+                    startCountdown();
+                    showAlert(2, data.message, 'success');
+                } else {
+                    showAlert(2, data.error, 'danger');
+                }
+            } catch (error) {
+                showAlert(2, 'Network error. Please try again.', 'danger');
+            }
+        }
+
+        document.getElementById('nextStep2').addEventListener('click', async function(e) {
+            e.preventDefault();
+            const emailCode = document.getElementById('email_code').value.trim();
+
+            if (!emailCode) {
+                showAlert(2, 'Please enter the code', 'danger');
+                return;
+            }
+
+            try {
+                const response = await fetch(verifyCodeUrl, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({ email: email, email_code: emailCode })
+                });
+                const data = await response.json();
+
+                alertContainers[2].innerHTML = '';
+                if (response.ok) {
+                    showAlert(2, data.message, 'success');
+                    setTimeout(() => showStep(3), 1500);
+                } else {
+                    showAlert(2, data.error, 'danger');
+                }
+            } catch (error) {
+                showAlert(2, 'Network error. Please try again.', 'danger');
+            }
+        });
+
+        document.getElementById('resendLink').addEventListener('click', async function(e) {
+            e.preventDefault();
+            try {
+                const response = await fetch(`${sendCodeUrl}?email=${encodeURIComponent(email)}&resend=true`);
+                const data = await response.json();
+
+                alertContainers[2].innerHTML = '';
+                if (response.ok) {
+                    timeLeft = data.expires_in;
+                    startCountdown();
+                    showAlert(2, data.message, 'success');
+                } else {
+                    showAlert(2, data.error, 'danger');
+                }
+            } catch (error) {
+                showAlert(2, 'Network error. Please try again.', 'danger');
+            }
+        });
+
+        document.getElementById('prevStep2').addEventListener('click', function(e) {
+            e.preventDefault();
+            showStep(1);
+        });
+
+        function startCountdown() {
+            const timerElement = document.getElementById('timer');
+            const countdownElement = document.getElementById('countdown');
+            clearInterval(window.countdownInterval);
+
+            window.countdownInterval = setInterval(() => {
+                if (timeLeft > 0) {
+                    timeLeft--;
+                    let minutes = Math.floor(timeLeft / 60);
+                    let seconds = timeLeft % 60;
+                    timerElement.textContent = `${minutes}:${seconds < 10 ? '0' + seconds : seconds}`;
+                } else {
+                    clearInterval(window.countdownInterval);
+                    countdownElement.textContent = 'Code has expired';
+                }
+            }, 1000);
+        }
+
+        // Step 3: Complete Registration
+        document.getElementById('submitStep3').addEventListener('click', async function(e) {
+            e.preventDefault();
+
+            const firstName = document.getElementById('first_name').value.trim();
+            const lastName = document.getElementById('last_name').value.trim();
+            const password = document.getElementById('password').value;
+            const confirmPassword = document.getElementById('confirm_password').value;
+
+            if (!firstName || !lastName || !password || !confirmPassword) {
+                showAlert(3, 'All fields are required', 'danger');
+                return;
+            }
+
+            if (password !== confirmPassword) {
+                showAlert(3, 'Passwords do not match', 'danger');
+                return;
+            }
+
+            try {
+                const response = await fetch(completeRegistrationApi, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' },
+                    body: JSON.stringify({
+                        email: email,
+                        first_name: firstName,
+                        last_name: lastName,
+                        password: password,
+                        confirm_password: confirmPassword
+                    })
+                });
+                const data = await response.json();
+
+                alertContainers[3].innerHTML = '';
+                if (response.ok) {
+                    localStorage.removeItem('registrationEmail');
+                    showAlert(3, data.message, 'success');
+                    setTimeout(() => window.location.href = data.redirect, 1500);
+                } else {
+                    showAlert(3, data.error, 'danger');
+                }
+            } catch (error) {
+                showAlert(3, 'Network error. Please try again.', 'danger');
+            }
+        });
+
+        document.getElementById('prevStep3').addEventListener('click', function(e) {
+            e.preventDefault();
+            showStep(2);
+        });
+
+        // Initialize email display if already in localStorage or session
+        if (email) {
+            document.getElementById('email-display-step2').textContent = email;
+            document.getElementById('email-display-step3').textContent = email;
+        }
+    </script>
+</body>
+</html>

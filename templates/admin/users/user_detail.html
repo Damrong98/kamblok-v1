@@ -1,0 +1,43 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}User Management{% endblock %}
+
+{% block script %}
+
+{% endblock %}
+
+{% block content %}
+<div class="container mt-4">
+    <h1 class="text-center">User Details</h1>
+    <div class="card shadow-sm p-4">
+        <div class="mb-3">
+            <span class="fw-bold text-muted">ID:</span>
+            <span class="text-dark">{{ user.id }}</span>
+        </div>
+        <div class="mb-3">
+            <span class="fw-bold text-muted">Username:</span>
+            <span class="text-dark">{{ user.username }}</span>
+        </div>
+        <div class="mb-3">
+            <span class="fw-bold text-muted">Email:</span>
+            <span class="text-dark">{{ user.email }}</span>
+        </div>
+        <div class="mb-3">
+            <span class="fw-bold text-muted">Max Messages:</span>
+            <span class="text-dark">{{ user.max_messages }}</span>
+        </div>
+        <div class="mb-3">
+            <span class="fw-bold text-muted">Created:</span>
+            <span class="text-dark">{{ user.created_at.strftime('%Y-%m-%d %H:%M:%S') }}</span>
+        </div>
+        <div class="mb-3">
+            <span class="fw-bold text-muted">Status:</span>
+            <span class="badge {{ 'bg-success' if user.is_active else 'bg-danger' }}">
+                {{ 'Active' if user.is_active else 'Inactive' }}
+            </span>
+        </div>
+        <a href="{{ url_for('admin_user_routes.get_all_users') }}" class="btn btn-secondary">&larr; Back to Users List</a>
+    </div>
+</div>
+
+{% endblock %}

@@ -1,0 +1,230 @@
+<!-- templates/admin/category/category.html -->
+
+{% extends "admin_layout.html" %}
+
+{% block title %}Prompt Manager{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1 class="mb-4">Prompt Manager</h1>
+
+        <!-- Create/Update Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Add/Edit Prompt</h5>
+                <form id="promptForm">
+                    <input type="hidden" id="promptId">
+                    <!-- <div class="mb-3">
+                        <label for="userId" class="form-label">User</label>
+                        <select class="form-select" id="userId" required>
+                            <option value="">Select a user</option>
+                        </select>
+                    </div> -->
+                    <div class="mb-3">
+                        <label for="promptText" class="form-label">Prompt Text</label>
+                        <textarea class="form-control" id="promptText" required></textarea>
+                    </div>
+                    <div class="mb-3">
+                        <label for="categoryId" class="form-label">Category</label>
+                        <select class="form-select" id="categoryId">
+                            <option value="">None</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="languageId" class="form-label">Language</label>
+                        <select class="form-select" id="languageId">
+                            <option value="">None</option>
+                        </select>
+                    </div>
+                    <div class="mb-3">
+                        <label for="isActive" class="form-label">Active</label>
+                        <select class="form-select" id="isActive">
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
+                    <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Prompts List -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Prompts</h5>
+                <table class="table table-striped" id="promptsTable">
+                    <thead>
+                        <tr>
+                            <th>User</th>
+                            <th>Prompt Text</th>
+                            <th>Category</th>
+                            <th>Language</th>
+                            <th>Active</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        document.addEventListener('DOMContentLoaded', async function() {
+            await loadDropdowns();
+            loadPrompts();
+
+            // Form submission
+            document.getElementById('promptForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const id = document.getElementById('promptId').value;
+                const data = {
+                    // user_id: document.getElementById('userId').value,
+                    prompt_text: document.getElementById('promptText').value,
+                    category_id: document.getElementById('categoryId').value,
+                    language_id: document.getElementById('languageId').value,
+                    is_active: document.getElementById('isActive').value === 'true'
+                };
+
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `/admin/api/prompts/${id}` : '/admin/api/prompts';
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error);
+                    alert(result.message);
+                    clearForm();
+                    loadPrompts();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            });
+
+            // Clear form
+            document.getElementById('clearBtn').addEventListener('click', clearForm);
+
+            // Load dropdowns
+            async function loadDropdowns() {
+                try {
+                    // Users
+                    // const userResponse = await fetch('/admin/api/users');
+                    // const users = await userResponse.json();
+                    // // const userSelect = document.getElementById('userId');
+                    // users.forEach(user => {
+                    //     const option = document.createElement('option');
+                    //     option.value = user.id;
+                    //     option.textContent = user.name;
+                    //     userSelect.appendChild(option);
+                    // });
+
+                    // Categories
+                    const catResponse = await fetch('/admin/api/categories');
+                    const categories = await catResponse.json();
+                    const catSelect = document.getElementById('categoryId');
+                    categories.forEach(cat => {
+                        const option = document.createElement('option');
+                        option.value = cat.id;
+                        option.textContent = cat.name;
+                        catSelect.appendChild(option);
+                    });
+
+                    // Languages
+                    const langResponse = await fetch('/admin/api/languages');
+                    const languages = await langResponse.json();
+                    const langSelect = document.getElementById('languageId');
+                    languages.forEach(lang => {
+                        const option = document.createElement('option');
+                        option.value = lang.id;
+                        option.textContent = lang.name;
+                        langSelect.appendChild(option);
+                    });
+                } catch (error) {
+                    alert('Error loading dropdowns: ' + error.message);
+                }
+            }
+
+            // Load prompts
+            async function loadPrompts() {
+                try {
+                    const response = await fetch('/admin/api/prompts');
+                    const prompts = await response.json();
+                    const tbody = document.querySelector('#promptsTable tbody');
+                    tbody.innerHTML = '';
+                    prompts.forEach(prompt => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${prompt.user_name}</td>
+                            <td>${prompt.prompt_text.substring(0, 20)}${prompt.prompt_text.length > 20 ? '...' : ''}</td>
+                            <td>${prompt.category_name || 'None'}</td>
+                            <td>${prompt.language_name || 'None'}</td>
+                            <td>${prompt.is_active ? 'Yes' : 'No'}</td>
+                            <td>${new Date(prompt.created_at).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary edit-btn" data-id="${prompt.id}">Edit</button>
+                                <button class="btn btn-sm btn-danger delete-btn" data-id="${prompt.id}">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', handleEdit));
+                    document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', handleDelete));
+                } catch (error) {
+                    alert('Error loading prompts: ' + error.message);
+                }
+            }
+
+            // Edit handler
+            async function handleEdit(e) {
+                const id = e.target.dataset.id;
+                try {
+                    const response = await fetch(`/admin/api/prompts/${id}`);
+                    const prompt = await response.json();
+                    document.getElementById('promptId').value = prompt.id;
+                    // document.getElementById('userId').value = prompt.user_id;
+                    document.getElementById('promptText').value = prompt.prompt_text;
+                    document.getElementById('categoryId').value = prompt.category_id || '';
+                    document.getElementById('languageId').value = prompt.language_id || '';
+                    document.getElementById('isActive').value = prompt.is_active.toString();
+                    document.getElementById('submitBtn').textContent = 'Update';
+                } catch (error) {
+                    alert('Error loading prompt: ' + error.message);
+                }
+            }
+
+            // Delete handler
+            async function handleDelete(e) {
+                if (confirm('Are you sure you want to delete this prompt?')) {
+                    const id = e.target.dataset.id;
+                    try {
+                        const response = await fetch(`/admin/api/prompts/${id}`, { method: 'DELETE' });
+                        const result = await response.json();
+                        if (!response.ok) throw new Error(result.error);
+                        alert(result.message);
+                        loadPrompts();
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                    }
+                }
+            }
+
+            // Clear form function
+            function clearForm() {
+                document.getElementById('promptForm').reset();
+                document.getElementById('promptId').value = '';
+                document.getElementById('isActive').value = 'true';
+                // document.getElementById('userId').value = '';
+                document.getElementById('submitBtn').textContent = 'Save';
+            }
+        });
+    </script>
+{% endblock %}

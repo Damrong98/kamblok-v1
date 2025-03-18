@@ -1,0 +1,215 @@
+.chat_container {
+    display: flex;
+    flex-direction: column;
+    height: calc(100vh - 60px); /* Full viewport height */
+    /* height: calc(100% - 100px); */
+    /* justify-content: space-between; */
+}
+
+/* box 01 */
+.scrollable_chat {
+    overflow-y: auto; /* Makes it scrollable */
+    /* background-color: lightblue; */
+    padding: 10px 20px;
+}
+.chat_content{
+    /* background-color: rgb(143, 226, 143); */
+    /* max-width: 720px; */
+    max-width: 48rem;
+    margin: auto;
+}
+
+/* box 02 */
+.chat_input {
+    /* background-color: steelblue; */
+    cursor: text; /* Indicates text input */
+    padding: 0 20px;
+    
+}
+.chat_box_content{
+    background-color: aliceblue;
+    /* max-width: 720px; */
+    max-width: 48rem;
+    margin: auto;
+    border: 1px darkgray solid;
+    border-radius: 20px;
+    overflow: hidden;
+    padding: 10px 20px;
+}
+.text_box {
+    width: 100%;
+    height: auto;
+    resize: none;
+    overflow-x: hidden;
+    overflow-y: auto;
+    padding: 0;
+    border: none;
+    outline: none;
+    line-height: 20px;
+    font-size: 16px;
+    line-height: 1.5;
+    margin: 10px 0;
+    background-color: aliceblue;
+}
+/* Make the scrollbar thin */
+.text_box::-webkit-scrollbar {
+    width: 6px; /* Adjust the width */
+    height: 6px; /* For horizontal scrollbars */
+}
+.text_box::-webkit-scrollbar-track {
+    background: #f1f1f1; /* Light gray background */
+    border-radius: 10px;
+}
+
+/* Scrollbar Thumb (draggable part) */
+.text_box::-webkit-scrollbar-thumb {
+    background: #888; /* Darker gray */
+    border-radius: 10px;
+    cursor: grab; /* Makes the scrollbar draggable */
+}
+
+/* On hover, make the thumb slightly darker */
+.text_box::-webkit-scrollbar-thumb:hover {
+    background: #555;
+    cursor: grabbing; /* When actively dragging */
+}
+
+/* Style on chat */
+.user{
+    display: flex;
+    justify-content: end;
+    margin-bottom: 20px;
+    
+}
+.user > div{
+    background-color: goldenrod;
+    border-radius: 20px;
+    padding: 10px 20px;
+}
+.model{
+    margin-bottom: 20px;
+}
+
+/* Action */
+.action_button_container{
+    display: flex;
+    justify-content: space-between;
+}
+.btn_custom{
+    border: 0.1px solid gray;
+    background-color: burlywood;
+    border-radius: 20px;
+    padding: 5px 15px;
+}
+
+
+/* Loading-text */
+.loading-text {
+    /* font-size: 2rem; */
+    /* font-weight: bold; */
+    display: flex;
+}
+.loading-text span {
+    animation: blink 1.5s infinite;
+}
+.loading-text span:nth-child(1) { animation-delay: 0s; }
+.loading-text span:nth-child(2) { animation-delay: 0.2s; }
+.loading-text span:nth-child(3) { animation-delay: 0.4s; }
+.loading-text span:nth-child(4) { animation-delay: 0.6s; }
+.loading-text span:nth-child(5) { animation-delay: 0.8s; }
+.loading-text span:nth-child(6) { animation-delay: 1s; }
+.loading-text span:nth-child(7) { animation-delay: 1.2s; }
+.loading-text span:nth-child(8) { animation-delay: 1.4s; }
+.loading-text span:nth-child(9) { animation-delay: 1.6s; }
+
+@keyframes blink {
+    0% { opacity: 0; }
+    50% { opacity: 1; }
+    100% { opacity: 0; }
+}
+
+/*  */
+.loading-indicator {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 10px;
+    color: #666;
+}
+
+.spinner {
+    width: 20px;
+    height: 20px;
+    border: 3px solid #f3f3f3;
+    border-top: 3px solid #3498db;
+    border-radius: 50%;
+    animation: spin 1s linear infinite;
+    margin-right: 10px;
+}
+
+.error-indicator {
+    padding: 10px;
+    color: #721c24;
+    background-color: #f8d7da;
+    border-radius: 5px;
+    text-align: center;
+    margin: 10px;
+}
+
+@keyframes spin {
+    0% { transform: rotate(0deg); }
+    100% { transform: rotate(360deg); }
+}
+
+/*  */
+.scroll-to-bottom {
+    position: absolute;
+    top: -40px;
+    left: 50%;
+    transform: translateX(-50%);
+    display: none; /* Hidden by default */
+    z-index: 10; /* Ensure it’s above other content */
+    border-radius: 20px;
+    padding: 5px 15px;
+}
+.scroll-to-bottom svg {
+    vertical-align: middle;
+}
+
+/* For the mark-down */
+.markdown-content {
+    margin-left: 20px;
+}
+/* .markdown-content ul li::marker {
+    content: "➤  "; 
+    color: #333;
+} */
+.markdown-content>div ul li::marker {
+    content: "❖  ";
+    color: #333;
+}
+.markdown-content>div>div ul li::marker {
+    content: "-  ";
+    color: #333;
+}
+
+/* Table */
+.markdown-content ol li::marker {
+    content: counter(list-item) ". "; /* Keeps numbers, or replace with a symbol */
+    color: #333;
+}
+
+.markdown-table {
+    border-collapse: collapse;
+    margin: 1em 0;
+    width: 100%;
+}
+.markdown-th, .markdown-td {
+    border: 1px solid #ddd;
+    padding: 8px;
+    text-align: left;
+}
+.markdown-th {
+    background-color: #f5f5f5;
+    font-weight: bold;
+}

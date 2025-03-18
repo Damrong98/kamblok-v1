@@ -1,0 +1,234 @@
+<!-- templates/admin/category/category.html -->
+
+{% extends "admin_layout.html" %}
+
+{% block title %}Prompt Manager{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1 class="mb-4">User Manager</h1>
+
+        <!-- Create/Update Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Add/Edit User</h5>
+                <form id="userForm">
+                    <input type="hidden" id="userId">
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="firstName" class="form-label">First Name</label>
+                            <input type="text" class="form-control" id="firstName" required>
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="lastName" class="form-label">Last Name</label>
+                            <input type="text" class="form-control" id="lastName" required>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="email" class="form-label">Email</label>
+                        <input type="email" class="form-control" id="email" required>
+                    </div>
+                    <div class="mb-3">
+                        <label for="password" class="form-label">Password</label>
+                        <input type="password" class="form-control" id="password">
+                        <small class="form-text text-muted">Leave blank to keep current password when updating</small>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-6 mb-3">
+                            <label for="phoneNumber" class="form-label">Phone Number</label>
+                            <input type="tel" class="form-control" id="phoneNumber">
+                        </div>
+                        <div class="col-md-6 mb-3">
+                            <label for="dateOfBirth" class="form-label">Date of Birth</label>
+                            <input type="date" class="form-control" id="dateOfBirth">
+                        </div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-4 mb-3">
+                            <label for="role" class="form-label">Role</label>
+                            <select class="form-select" id="role" required>
+                                <option value="1">Admin</option>
+                                <option value="2">Editor</option>
+                                <option value="3" selected>User</option>
+                            </select>
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="maxMessages" class="form-label">Max Messages</label>
+                            <input type="number" class="form-control" id="maxMessages" min="0" value="0">
+                        </div>
+                        <div class="col-md-4 mb-3">
+                            <label for="registrationType" class="form-label">Registration Type</label>
+                            <select class="form-select" id="registrationType">
+                                <option value="">None</option>
+                                <option value="email">Email</option>
+                                <option value="google">Google</option>
+                                <option value="phone">Phone</option>
+                            </select>
+                        </div>
+                    </div>
+                    <div class="mb-3">
+                        <label for="isActive" class="form-label">Active</label>
+                        <select class="form-select" id="isActive">
+                            <option value="true">Yes</option>
+                            <option value="false">No</option>
+                        </select>
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
+                    <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Users List -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Users</h5>
+                <table class="table table-striped" id="usersTable">
+                    <thead>
+                        <tr>
+                            <th>Name</th>
+                            <th>Username</th>
+                            <th>Email</th>
+                            <th>Phone</th>
+                            <th>Role</th>
+                            <th>Active</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadUsers();
+
+            // Form submission
+            document.getElementById('userForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const id = document.getElementById('userId').value;
+                const data = {
+                    first_name: document.getElementById('firstName').value,
+                    last_name: document.getElementById('lastName').value,
+                    email: document.getElementById('email').value,
+                    phone_number: document.getElementById('phoneNumber').value || null,
+                    date_of_birth: document.getElementById('dateOfBirth').value || null,
+                    role: document.getElementById('role').value,
+                    max_messages: document.getElementById('maxMessages').value,
+                    registration_type: document.getElementById('registrationType').value || null,
+                    is_active: document.getElementById('isActive').value === 'true'
+                };
+                if (!id || document.getElementById('password').value) {
+                    data.password = document.getElementById('password').value;
+                }
+
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `/admin/api/users/${id}` : '/admin/api/users';
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: { 'Content-Type': 'application/json' },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error);
+                    alert(result.message);
+                    clearForm();
+                    loadUsers();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            });
+
+            // Clear form
+            document.getElementById('clearBtn').addEventListener('click', clearForm);
+
+            // Load users
+            async function loadUsers() {
+                try {
+                    const response = await fetch('/admin/api/users');
+                    const users = await response.json();
+                    const tbody = document.querySelector('#usersTable tbody');
+                    tbody.innerHTML = '';
+                    users.forEach(user => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${user.first_name} ${user.last_name}</td>
+                            <td>${user.username || 'N/A'}</td>
+                            <td>${user.email}</td>
+                            <td>${user.phone_number || 'N/A'}</td>
+                            <td>${user.role_name}</td>
+                            <td>${user.is_active ? 'Yes' : 'No'}</td>
+                            <td>${new Date(user.created_at).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary edit-btn" data-id="${user.id}">Edit</button>
+                                <button class="btn btn-sm btn-danger delete-btn" data-id="${user.id}">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    document.querySelectorAll('.edit-btn').forEach(btn => btn.addEventListener('click', handleEdit));
+                    document.querySelectorAll('.delete-btn').forEach(btn => btn.addEventListener('click', handleDelete));
+                } catch (error) {
+                    alert('Error loading users: ' + error.message);
+                }
+            }
+
+            // Edit handler
+            async function handleEdit(e) {
+                const id = e.target.dataset.id;
+                try {
+                    const response = await fetch(`/admin/api/users/${id}`);
+                    const user = await response.json();
+                    document.getElementById('userId').value = user.id;
+                    document.getElementById('firstName').value = user.first_name;
+                    document.getElementById('lastName').value = user.last_name;
+                    document.getElementById('email').value = user.email;
+                    document.getElementById('phoneNumber').value = user.phone_number || '';
+                    document.getElementById('dateOfBirth').value = user.date_of_birth || '';
+                    document.getElementById('role').value = user.role;
+                    document.getElementById('maxMessages').value = user.max_messages;
+                    document.getElementById('registrationType').value = user.registration_type || '';
+                    document.getElementById('isActive').value = user.is_active.toString();
+                    document.getElementById('password').value = '';
+                    document.getElementById('submitBtn').textContent = 'Update';
+                } catch (error) {
+                    alert('Error loading user: ' + error.message);
+                }
+            }
+
+            // Delete handler
+            async function handleDelete(e) {
+                if (confirm('Are you sure you want to delete this user?')) {
+                    const id = e.target.dataset.id;
+                    try {
+                        const response = await fetch(`/admin/api/users/${id}`, { method: 'DELETE' });
+                        const result = await response.json();
+                        if (!response.ok) throw new Error(result.error);
+                        alert(result.message);
+                        loadUsers();
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                    }
+                }
+            }
+
+            // Clear form function
+            function clearForm() {
+                document.getElementById('userForm').reset();
+                document.getElementById('userId').value = '';
+                document.getElementById('role').value = '3';
+                document.getElementById('maxMessages').value = '0';
+                document.getElementById('isActive').value = 'true';
+                document.getElementById('submitBtn').textContent = 'Save';
+            }
+        });
+    </script>
+{% endblock %}

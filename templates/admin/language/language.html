@@ -1,0 +1,163 @@
+<!-- templates/admin/language/language.html -->
+
+{% extends "admin_layout.html" %}
+
+{% block title %}Language Manager{% endblock %}
+
+{% block content %}
+    <div class="container mt-5">
+        <h1 class="mb-4">Language Manager</h1>
+
+        <!-- Create/Update Form -->
+        <div class="card mb-4">
+            <div class="card-body">
+                <h5 class="card-title">Add/Edit Language</h5>
+                <form id="languageForm">
+                    <input type="hidden" id="languageId">
+                    <div class="mb-3">
+                        <label for="code" class="form-label">Code</label>
+                        <input type="text" class="form-control" id="code" required maxlength="10">
+                    </div>
+                    <div class="mb-3">
+                        <label for="name" class="form-label">Name</label>
+                        <input type="text" class="form-control" id="name" required maxlength="50">
+                    </div>
+                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
+                    <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
+                </form>
+            </div>
+        </div>
+
+        <!-- Languages List -->
+        <div class="card">
+            <div class="card-body">
+                <h5 class="card-title">Languages</h5>
+                <table class="table table-striped" id="languagesTable">
+                    <thead>
+                        <tr>
+                            <th>Code</th>
+                            <th>Name</th>
+                            <th>Created</th>
+                            <th>Actions</th>
+                        </tr>
+                    </thead>
+                    <tbody></tbody>
+                </table>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            loadLanguages();
+
+            // Form submission
+            document.getElementById('languageForm').addEventListener('submit', async function(e) {
+                e.preventDefault();
+                const id = document.getElementById('languageId').value;
+                const data = {
+                    code: document.getElementById('code').value,
+                    name: document.getElementById('name').value
+                };
+
+                const method = id ? 'PUT' : 'POST';
+                const url = id ? `/admin/api/languages/${id}` : '/admin/api/languages';
+
+                try {
+                    const response = await fetch(url, {
+                        method: method,
+                        headers: {
+                            'Content-Type': 'application/json'
+                        },
+                        body: JSON.stringify(data)
+                    });
+                    const result = await response.json();
+                    if (!response.ok) throw new Error(result.error);
+                    alert(result.message);
+                    clearForm();
+                    loadLanguages();
+                } catch (error) {
+                    alert('Error: ' + error.message);
+                }
+            });
+
+            // Clear form
+            document.getElementById('clearBtn').addEventListener('click', clearForm);
+
+            // Load languages
+            async function loadLanguages() {
+                try {
+                    const response = await fetch('/admin/api/languages');
+                    const languages = await response.json();
+                    const tbody = document.querySelector('#languagesTable tbody');
+                    tbody.innerHTML = '';
+                    languages.forEach(language => {
+                        const tr = document.createElement('tr');
+                        tr.innerHTML = `
+                            <td>${language.code}</td>
+                            <td>${language.name}</td>
+                            <td>${new Date(language.created_at).toLocaleDateString()}</td>
+                            <td>
+                                <button class="btn btn-sm btn-primary edit-btn" data-id="${language.id}">Edit</button>
+                                <button class="btn btn-sm btn-danger delete-btn" data-id="${language.id}">Delete</button>
+                            </td>
+                        `;
+                        tbody.appendChild(tr);
+                    });
+
+                    // Add event listeners to buttons
+                    document.querySelectorAll('.edit-btn').forEach(btn => {
+                        btn.addEventListener('click', handleEdit);
+                    });
+                    document.querySelectorAll('.delete-btn').forEach(btn => {
+                        btn.addEventListener('click', handleDelete);
+                    });
+                } catch (error) {
+                    alert('Error loading languages: ' + error.message);
+                }
+            }
+
+            // Edit handler
+            async function handleEdit(e) {
+                const id = e.target.dataset.id;
+                try {
+                    const response = await fetch(`/admin/api/languages/${id}`);
+                    const language = await response.json();
+                    document.getElementById('languageId').value = language.id;
+                    document.getElementById('code').value = language.code;
+                    document.getElementById('name').value = language.name;
+                    document.getElementById('submitBtn').textContent = 'Update';
+                } catch (error) {
+                    alert('Error loading language: ' + error.message);
+                }
+            }
+
+            // Delete handler
+            async function handleDelete(e) {
+                if (confirm('Are you sure you want to delete this language?')) {
+                    const id = e.target.dataset.id;
+                    try {
+                        const response = await fetch(`/admin/api/languages/${id}`, {
+                            method: 'DELETE'
+                        });
+                        const result = await response.json();
+                        if (!response.ok) throw new Error(result.error);
+                        alert(result.message);
+                        loadLanguages();
+                    } catch (error) {
+                        alert('Error: ' + error.message);
+                    }
+                }
+            }
+
+            // Clear form function
+            function clearForm() {
+                document.getElementById('languageForm').reset();
+                document.getElementById('languageId').value = '';
+                document.getElementById('submitBtn').textContent = 'Save';
+            }
+        });
+    </script>
+{% endblock %}

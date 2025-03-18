@@ -1,0 +1,243 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Prompt Viewer</title>
+    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> -->
+    <style>
+        #promptScroll {
+            border: 1px solid #ccc;
+            padding: 10px;
+            height: 500px; /* Adjust as needed */
+        }
+        .loading {
+            text-align: center;
+            padding: 20px;
+            display: none;
+        }
+        .no-data {
+            text-align: center;
+            padding: 20px;
+            color: #666;
+        }
+    </style>
+</head>
+<body>
+    <div class="container mt-3">
+        <div class="d-flex flex-column flex-grow-1">
+            <div class="d-flex justify-content-between mb-3">
+                <div class="tabs" id="categoryTabs">
+                    <!-- "All" tab and categories will be populated dynamically -->
+                </div>
+                <div>
+                    <select id="language-select" class="form-select form-select-sm">
+                        <option value="" selected>All Languages</option>
+                        <!-- Languages will be populated dynamically -->
+                    </select>
+                </div>
+            </div>
+
+            <div id="promptScroll" class="flex-grow-1 overflow-auto py-2">
+                <div id="promptContent" class="row g-2">
+                    <div class="loading" id="loading">Loading...</div>
+                    <div class="no-data" id="no-data">No prompts available</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
+    <script>
+        document.addEventListener('DOMContentLoaded', () => {
+            let categoryID = null; // Default to no category filter
+            let languageID = null; // Default to no language filter
+            let fetchAll = true;   // Start with "All" tab active
+            let currentPage = 1;
+            let isLoading = false;
+            let hasNext = true;
+
+            const promptScroll = document.getElementById('promptScroll');
+            const promptContent = document.getElementById('promptContent');
+            const loading = document.getElementById('loading');
+            const noData = document.getElementById('no-data');
+            const categoryTabs = document.getElementById('categoryTabs');
+            const languageSelect = document.getElementById('language-select');
+
+            // Load categories dynamically with "All" tab
+            async function loadCategories() {
+                try {
+                    // Add "All" tab first
+                    const allTab = document.createElement('button');
+                    allTab.className = 'tab-button btn btn-sm me-1 active';
+                    allTab.dataset.categoryId = ''; // Empty for "All"
+                    allTab.textContent = 'All';
+                    allTab.addEventListener('click', function() {
+                        document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
+                        this.classList.add('active');
+                        categoryID = null;
+                        languageID = null; // Reset language filter for "All"
+                        fetchAll = true;
+                        languageSelect.value = ''; // Reset dropdown to "All Languages"
+                        resetAndFetch();
+                    });
+                    categoryTabs.appendChild(allTab);
+
+                    // Fetch and add other categories
+                    const response = await fetch('/api/categories');
+                    const categories = await response.json();
+                    categories.forEach(cat => {
+                        const btn = document.createElement('button');
+                        btn.className = 'tab-button btn btn-sm me-1';
+                        btn.dataset.categoryId = cat.id;
+                        btn.textContent = cat.name;
+                        btn.addEventListener('click', function() {
+                            document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
+                            this.classList.add('active');
+                            categoryID = this.dataset.categoryId;
+                            fetchAll = false;
+                            resetAndFetch();
+                        });
+                        categoryTabs.appendChild(btn);
+                    });
+                } catch (error) {
+                    console.error('Error loading categories:', error);
+                }
+            }
+
+            // Load languages dynamically
+            async function loadLanguages() {
+                try {
+                    const response = await fetch('/api/languages');
+                    const languages = await response.json();
+                    languages.forEach(lang => {
+                        const option = document.createElement('option');
+                        option.value = lang.id;
+                        option.textContent = lang.name;
+                        languageSelect.appendChild(option);
+                    });
+
+                } catch (error) {
+                    console.error('Error loading languages:', error);
+                }
+            }
+
+            // Reset pagination and fetch prompts
+            function resetAndFetch() {
+                currentPage = 1;
+                hasNext = true;
+                promptContent.innerHTML = '';
+                promptContent.appendChild(loading);
+                promptContent.appendChild(noData);
+                fetchPrompts();
+            }
+
+            // Fetch prompts from API
+            async function fetchPrompts() {
+                if (isLoading || !hasNext) return;
+
+                isLoading = true;
+                loading.style.display = 'block';
+                noData.style.display = 'none';
+
+                try {
+                    let url = `/api/prompts?page=${currentPage}`;
+                    if (fetchAll) {
+                        url += '&all=true';
+                    } else {
+                        if (languageID) url += `&language_id=${languageID}`;
+                        if (categoryID) url += `&category_id=${categoryID}`;
+                    }
+
+                    const response = await fetch(url);
+                    const data = await response.json();
+
+                    if (data.status === 'success') {
+                        if (data.data.length > 0 || currentPage > 1) {
+                            noData.style.display = 'none';
+                        } else {
+                            noData.style.display = 'block';
+                        }
+
+                        data.data.forEach(prompt => {
+                            const promptDiv = document.createElement('div');
+                            promptDiv.className = 'col-md-6 col-12';
+                            promptDiv.innerHTML = `
+                                <div class="bg-light" style="border: 1px solid #ccc; border-radius: 8px;">
+                                    <textarea id="${prompt.id}" class="form-control editable-text" style="height: 100px;" readonly>${prompt.prompt_text}</textarea>
+                                    <div class="d-flex justify-content-end px-1">
+                                        <button class="btn btn-sm" data-textarea="${prompt.id}" onclick="copyText(this)">Copy</button>
+                                        <button class="btn btn-sm" data-textarea="${prompt.id}" onclick="toggleEdit(this)">Edit</button>
+                                        <button class="btn btn-sm" data-textarea="${prompt.id}" onclick="useAsPrompt(this)">Use prompt</button>
+                                    </div>
+                                </div>
+                            `;
+                            promptContent.insertBefore(promptDiv, loading);
+                        });
+
+                        hasNext = data.metadata.has_next;
+                        currentPage++;
+
+                        if (!hasNext) {
+                            loading.style.display = 'none';
+                        }
+                    } else {
+                        throw new Error(data.error || 'API error');
+                    }
+                } catch (error) {
+                    console.error('Error fetching prompts:', error);
+                    noData.textContent = 'Error loading prompts';
+                    noData.style.display = 'block';
+                } finally {
+                    isLoading = false;
+                    if (currentPage === 2 && promptScroll.children.length === 2) {
+                        loading.style.display = 'none';
+                    }
+                }
+            }
+
+            // Utility functions
+            function copyText(button) {
+                const textarea = document.getElementById(button.dataset.textarea);
+                textarea.select();
+                document.execCommand('copy');
+                alert('Text copied to clipboard');
+            }
+
+            function toggleEdit(button) {
+                const textarea = document.getElementById(button.dataset.textarea);
+                textarea.readOnly = !textarea.readOnly;
+                button.textContent = textarea.readOnly ? 'Edit' : 'Save';
+                // Add save logic here if needed
+            }
+
+            function useAsPrompt(button) {
+                const textarea = document.getElementById(button.dataset.textarea);
+                console.log('Using prompt:', textarea.value);
+                // Add your logic to use the prompt
+            }
+
+            // Event listeners
+            languageSelect.addEventListener('change', function() {
+                languageID = this.value || null;
+                fetchAll = false; // Language filter overrides "All"
+                resetAndFetch();
+            });
+
+
+            promptScroll.addEventListener('scroll', () => {
+                if (isLoading || !hasNext) return;
+                const { scrollTop, scrollHeight, clientHeight } = promptScroll;
+                if (scrollTop + clientHeight >= scrollHeight - 50) {
+                    fetchPrompts();
+                }
+            });
+
+            // Initial load
+            loadCategories();
+            loadLanguages();
+            fetchPrompts();
+        });
+    </script>
+</body>
+</html>

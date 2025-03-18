@@ -1,0 +1,116 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}User Management{% endblock %}
+
+{% block script %}
+
+{% endblock %}
+{% block content %}
+    
+<div class="container mt-4">
+    <h1 class="text-center">User Management</h1>
+
+    <!-- Create User Form -->
+    <div class="card shadow-sm p-4 my-4">
+        <h2 class="mb-3">Create New User</h2>
+        <form id="createUserForm">
+            <div class="mb-3">
+                <label for="username" class="form-label">Username:</label>
+                <input type="text" class="form-control" id="username" name="username">
+            </div>
+            <div class="mb-3">
+                <label for="email" class="form-label">Email:</label>
+                <input type="email" class="form-control" id="email" name="email" required>
+            </div>
+            <div class="mb-3">
+                <label for="password" class="form-label">Password:</label>
+                <input type="password" class="form-control" id="password" name="password" required>
+            </div>
+            <button type="submit" class="btn btn-primary">Create User</button>
+        </form>
+        <div id="message" class="mt-3 d-none alert"></div>
+    </div>
+
+    <!-- Users List -->
+    <div class="card shadow-sm p-4">
+        <h2 class="mb-3">All Users</h2>
+        <button class="btn btn-secondary mb-3" onclick="fetchUsers()">Refresh Users</button>
+        <ul id="usersList" class="list-group"></ul>
+    </div>
+</div>
+
+<script>
+    // API base URL
+    const API_URL = 'http://127.0.0.1:5000';
+
+    // Create User Form Submission
+    document.getElementById('createUserForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        
+        const username = document.getElementById('username').value;
+        const email = document.getElementById('email').value;
+        const password = document.getElementById('password').value;
+        const messageDiv = document.getElementById('message');
+
+        try {
+            const response = await fetch(`${API_URL}/api/users/create`, {
+                method: 'POST',
+                headers: {
+                    'Content-Type': 'application/json',
+                },
+                body: JSON.stringify({ username, email, password })
+            });
+
+            const data = await response.json();
+            messageDiv.style.display = 'block';
+
+            if (response.ok) {
+                messageDiv.textContent = 'User created successfully!';
+                messageDiv.className = 'success';
+                document.getElementById('createUserForm').reset();
+                fetchUsers(); // Refresh the user list
+            } else {
+                messageDiv.textContent = data.error || 'Something went wrong';
+                messageDiv.className = 'error';
+            }
+
+            setTimeout(() => {
+                messageDiv.style.display = 'none';
+            }, 3000);
+
+        } catch (error) {
+            messageDiv.style.display = 'block';
+            messageDiv.textContent = 'Error: ' + error.message;
+            messageDiv.className = 'error';
+        }
+    });
+
+    // Fetch and display all users
+    async function fetchUsers() {
+        try {
+            const response = await fetch(`${API_URL}/api/users`);
+            const users = await response.json();
+            const usersList = document.getElementById('usersList');
+            
+            usersList.innerHTML = '';
+            users.forEach(user => {
+                const li = document.createElement('li');
+                li.className = 'user-item';
+                li.innerHTML = `
+                    <a href="/users/${user.id}">
+                        <strong>${user.username}</strong> 
+                    </a>(${user.email})<br>
+                    Created: ${new Date(user.created_at).toLocaleString()}<br>
+                    Status: ${user.is_active ? 'Active' : 'Inactive'}
+                `;
+                usersList.appendChild(li);
+            });
+        } catch (error) {
+            console.error('Error fetching users:', error);
+        }
+    }
+
+    // Initial load of users
+    fetchUsers();
+</script>
+{% endblock %}
