@@ -27,7 +27,7 @@ class Config:
     )
 
     # Use DATABASE_URL from Railway if available, otherwise fallback to MySQL URI
-    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or MYSQL_URI
+    SQLALCHEMY_DATABASE_URI = os.getenv('MYSQL_URL') or MYSQL_URI
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # # Database configuration variables for Google Cloud SQL (MySQL)
