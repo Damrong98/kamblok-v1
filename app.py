@@ -33,7 +33,8 @@ from App.seeds.init_system import init_system_settings
 
 # from werkzeug.security import generate_password_hash, check_password_hash
 # print("Hash:", generate_password_hash("admin"))
-
+import pymysql
+pymysql.install_as_MySQLdb()
 
 app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'

@@ -13,6 +13,7 @@ class Config:
     # SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///users.db')
     # SQLALCHEMY_TRACK_MODIFICATIONS = False
 
+    DATABASE_URI = os.getenv('DATABASE_URI')
     # Database configuration variables
     DB_USERNAME = os.getenv('DB_USERNAME', 'root')
     DB_PASSWORD = os.getenv('DB_PASSWORD', '')
@@ -26,23 +27,11 @@ class Config:
         f'@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     )
 
+    # print(f"Final SQLALCHEMY_DATABASE_URI: {DATABASE_URI}")
+
     # Use DATABASE_URL from Railway if available, otherwise fallback to MySQL URI
     SQLALCHEMY_DATABASE_URI = os.getenv('MYSQL_URL') or MYSQL_URI
     SQLALCHEMY_TRACK_MODIFICATIONS = False
-    
-    # # Database configuration variables for Google Cloud SQL (MySQL)
-    # DB_USERNAME = os.getenv('DB_USERNAME', '<username>')
-    # DB_PASSWORD = os.getenv('DB_PASSWORD', '<password>')
-    # DB_NAME = os.getenv('DB_NAME', '<database_name>')
-    # DB_PROJECT_ID = os.getenv('DB_PROJECT_ID', '<project_id>')
-    # DB_REGION = os.getenv('DB_REGION', '<region>')
-    # DB_INSTANCE_NAME = os.getenv('DB_INSTANCE_NAME', '<instance_name>')
-
-    # SQLALCHEMY_DATABASE_URI = (
-    #     f'mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}@/{DB_NAME}'
-    #     f'?unix_socket=/cloudsql/{DB_PROJECT_ID}:{DB_REGION}:{DB_INSTANCE_NAME}'
-    # )
-    # SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Mail configuration
     MAIL_SERVER = os.getenv('MAIL_SERVER', 'smtp.gmail.com')
