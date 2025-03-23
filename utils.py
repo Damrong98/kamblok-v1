@@ -8,8 +8,8 @@ def login_required(f):
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
             flash('Please login first', 'error')
-            # return redirect(url_for('auth.login'))  # Note: assumes 'auth' Blueprint
-            return redirect(url_for('home')) 
+            return redirect(url_for('auth.login'))  # Note: assumes 'auth' Blueprint
+            # return redirect(url_for('home')) 
         return f(*args, **kwargs)
     return decorated_function
 

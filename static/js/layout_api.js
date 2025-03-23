@@ -5,22 +5,26 @@
  */
     // Fetch logo_html from Flask API
 
-function getLogoFromSystemSettings() {
-    fetch("/admin/api/system_settings/get_logo_html")
-        .then(response => response.json())  // Convert response to JSON
+function getLogoAndCssFromSystemSettings() {
+    fetch("/admin/api/system_settings/get_logoAndCSS")
+        .then(response => response.json())
         .then(data => {
-            // console.log("Render Logo", data)
             if (data.logo_html) {
-                // document.querySelectorAll(".appLogo").innerHTML = data.logo_html;
                 document.querySelectorAll(".appLogo").forEach(element => {
                     element.innerHTML = data.logo_html;
                 });
             }
+            if (data.custom_css) {
+                const styleElement = document.createElement("style");
+                styleElement.textContent = data.custom_css;
+                document.head.appendChild(styleElement);
+            }
         })
-        .catch(error => console.error("Error fetching logo:", error));
+        .catch(error => console.error("Error fetching settings:", error));
 }
 
-document.addEventListener("DOMContentLoaded", getLogoFromSystemSettings);
+document.addEventListener("DOMContentLoaded", getLogoAndCssFromSystemSettings);
+ 
       
     
 /* 
@@ -42,7 +46,7 @@ function fetchAuthData() {
         return response.json();
     })
     .then(data => {
-        console.log("Auth data:", data);
+        // console.log("Auth data:", data);
         if (data.status === 'success') {
             displayUserData(data.user);
         } else {
@@ -50,7 +54,7 @@ function fetchAuthData() {
         }
     })
     .catch(error => {
-        console.error('Error fetching user data:', error);
+        // console.error('Error fetching user data:', error);
         displayError('Error loading user data. Please try again.');
     });
 }
@@ -157,7 +161,7 @@ document.addEventListener('DOMContentLoaded', () => {
             const data = await response.json();
             
             if (data.status === 'success') {
-                console.log("Conversation",data.conversations);
+                // console.log("Conversation",data.conversations);
                 // Append conversations to the div
                 displayConversations(data.conversations);
 

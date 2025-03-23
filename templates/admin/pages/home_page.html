@@ -1,0 +1,16 @@
+{% extends "guest_layout.html" %}
+
+{% block content %}
+    
+    {{ page.content | safe }}
+    <!-- <div id="welcome-message"></div> -->
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const welcomeDiv = document.getElementById('welcome-message');
+            welcomeDiv.innerHTML = '<p>Welcome! This message is added via JavaScript.</p>';
+        });
+    </script>
+{% endblock %}

@@ -2,164 +2,168 @@
 
 {% extends "admin_layout.html" %}
 
-{% block title %}Category Manager{% endblock %}
+{% block title %}Category Management{% endblock %}
 
 {% block content %}
-    <div class="container mt-5">
-        <h1 class="mb-4">Category Manager</h1>
+<div class="container mt-4">
+    <h1 class="pb-3">Category Management</h1>
+    
+    {% with messages = get_flashed_messages(with_categories=true) %}
+        {% if messages %}
+            {% for category, message in messages %}
+                <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                    {{ message }}
+                    <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                </div>
+            {% endfor %}
+        {% endif %}
+    {% endwith %}
 
-        <!-- Create/Update Form -->
-        <div class="card mb-4">
-            <div class="card-body">
-                <h5 class="card-title">Add/Edit Category</h5>
+    <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#categoryModal" onclick="resetForm()">Create New Category</button>
+
+    <table class="table table-striped">
+        <thead>
+            <tr>
+                <th>Name</th>
+                <th>Description</th>
+                <th>Actions</th>
+            </tr>
+        </thead>
+        <tbody id="categoriesTable">
+            {% for category in pagination.items %}
+                <tr>
+                    <td>{{ category.name }}</td>
+                    <td>{{ category.description|truncate(50) }}</td>
+                    <td>
+                        <button class="btn btn-sm btn-warning edit-category-btn"
+                                data-id="{{ category.id }}"
+                                data-name="{{ category.name }}"
+                                data-description="{{ category.description or '' }}">Edit</button>
+                        <button class="btn btn-sm btn-danger" onclick="deleteCategory('{{ category.id }}')">Delete</button>
+                    </td>
+                </tr>
+            {% endfor %}
+            {% if not pagination.items %}
+                <tr>
+                    <td colspan="3" class="text-center">No categories found</td>
+                </tr>
+            {% endif %}
+        </tbody>
+    </table>
+
+    <nav>
+        <ul class="pagination">
+            <li class="page-item {{ 'disabled' if not pagination.has_prev else '' }}">
+                <a class="page-link" href="{{ url_for('admin_category_routes.categories', page=pagination.prev_num) if pagination.has_prev else '#' }}"
+                   {% if not pagination.has_prev %}aria-disabled="true"{% endif %}>Previous</a>
+            </li>
+            {% for page in pagination.iter_pages() %}
+                {% if page %}
+                    <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                        <a class="page-link" href="{{ url_for('admin_category_routes.categories', page=page) }}">{{ page }}</a>
+                    </li>
+                {% endif %}
+            {% endfor %}
+            <li class="page-item {{ 'disabled' if not pagination.has_next else '' }}">
+                <a class="page-link" href="{{ url_for('admin_category_routes.categories', page=pagination.next_num) if pagination.has_next else '#' }}"
+                   {% if not pagination.has_next %}aria-disabled="true"{% endif %}>Next</a>
+            </li>
+        </ul>
+    </nav>
+</div>
+
+<div class="modal fade" id="categoryModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="modalTitle">Create Category</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <div class="modal-body">
                 <form id="categoryForm">
                     <input type="hidden" id="categoryId">
                     <div class="mb-3">
-                        <label for="name" class="form-label">Name</label>
+                        <label class="form-label">Name</label>
                         <input type="text" class="form-control" id="name" required>
                     </div>
                     <div class="mb-3">
-                        <label for="description" class="form-label">Description</label>
-                        <textarea class="form-control" id="description"></textarea>
+                        <label class="form-label">Description</label>
+                        <textarea class="form-control" id="description" rows="3"></textarea>
                     </div>
-                    <button type="submit" class="btn btn-primary" id="submitBtn">Save</button>
-                    <button type="button" class="btn btn-secondary" id="clearBtn">Clear</button>
                 </form>
             </div>
-        </div>
-
-        <!-- Categories List -->
-        <div class="card">
-            <div class="card-body">
-                <h5 class="card-title">Categories</h5>
-                <table class="table table-striped" id="categoriesTable">
-                    <thead>
-                        <tr>
-                            <th>Name</th>
-                            <th>Description</th>
-                            <th>Created</th>
-                            <th>Actions</th>
-                        </tr>
-                    </thead>
-                    <tbody></tbody>
-                </table>
+            <div class="modal-footer">
+                <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                <button type="button" class="btn btn-primary" onclick="saveCategory()">Save</button>
             </div>
         </div>
     </div>
-
+</div>
 {% endblock %}
 
 {% block script %}
-
 <script>
-    document.addEventListener('DOMContentLoaded', function() {
-        loadCategories();
+    function resetForm() {
+        document.getElementById('categoryForm').reset();
+        document.getElementById('categoryId').value = '';
+        document.getElementById('modalTitle').textContent = 'Create Category';
+    }
 
-        // Form submission
-        document.getElementById('categoryForm').addEventListener('submit', async function(e) {
-            e.preventDefault();
-            const id = document.getElementById('categoryId').value;
-            const data = {
-                name: document.getElementById('name').value,
-                description: document.getElementById('description').value
-            };
+    function editCategory(id, name, description) {
+        document.getElementById('categoryId').value = id;
+        document.getElementById('name').value = name;
+        document.getElementById('description').value = description;
+        document.getElementById('modalTitle').textContent = 'Edit Category';
+        new bootstrap.Modal(document.getElementById('categoryModal')).show();
+    }
 
-            const method = id ? 'PUT' : 'POST';
-            const url = id ? `/admin/api/categories/${id}` : '/admin/api/categories';
+    async function saveCategory() {
+        const id = document.getElementById('categoryId').value;
+        const data = {
+            name: document.getElementById('name').value,
+            description: document.getElementById('description').value
+        };
 
-            try {
-                const response = await fetch(url, {
-                    method: method,
-                    headers: {
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify(data)
-                });
-                const result = await response.json();
-                if (!response.ok) throw new Error(result.error);
-                alert(result.message);
-                clearForm();
-                loadCategories();
-            } catch (error) {
-                alert('Error: ' + error.message);
-            }
+        const url = id ? `/admin/api/category/update/${id}` : '/admin/api/category/create';
+        const response = await fetch(url, {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify(data)
         });
 
-        // Clear form
-        document.getElementById('clearBtn').addEventListener('click', clearForm);
+        if (response.ok) {
+            location.reload();
+        } else {
+            const result = await response.json();
+            alert('Error: ' + result.error);
+        }
+    }
 
-        // Load categories
-        async function loadCategories() {
-            try {
-                const response = await fetch('/admin/api/categories');
-                const categories = await response.json();
-                const tbody = document.querySelector('#categoriesTable tbody');
-                tbody.innerHTML = '';
-                categories.forEach(category => {
-                    const tr = document.createElement('tr');
-                    tr.innerHTML = `
-                        <td>${category.name}</td>
-                        <td>${category.description || ''}</td>
-                        <td>${new Date(category.created_at).toLocaleDateString()}</td>
-                        <td>
-                            <button class="btn btn-sm btn-primary edit-btn" data-id="${category.id}">Edit</button>
-                            <button class="btn btn-sm btn-danger delete-btn" data-id="${category.id}">Delete</button>
-                        </td>
-                    `;
-                    tbody.appendChild(tr);
-                });
+    async function deleteCategory(id) {
+        if (confirm('Are you sure you want to delete this category?')) {
+            const response = await fetch(`/admin/api/category/delete/${id}`, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' }
+            });
 
-                // Add event listeners to buttons
-                document.querySelectorAll('.edit-btn').forEach(btn => {
-                    btn.addEventListener('click', handleEdit);
-                });
-                document.querySelectorAll('.delete-btn').forEach(btn => {
-                    btn.addEventListener('click', handleDelete);
-                });
-            } catch (error) {
-                alert('Error loading categories: ' + error.message);
+            if (response.ok) {
+                location.reload();
+            } else {
+                const result = await response.json();
+                alert('Error: ' + result.error);
             }
         }
+    }
 
-        // Edit handler
-        async function handleEdit(e) {
-            const id = e.target.dataset.id;
-            try {
-                const response = await fetch(`/admin/api/categories/${id}`);
-                const category = await response.json();
-                document.getElementById('categoryId').value = category.id;
-                document.getElementById('name').value = category.name;
-                document.getElementById('description').value = category.description;
-                document.getElementById('submitBtn').textContent = 'Update';
-            } catch (error) {
-                alert('Error loading category: ' + error.message);
-            }
-        }
-
-        // Delete handler
-        async function handleDelete(e) {
-            if (confirm('Are you sure you want to delete this category?')) {
-                const id = e.target.dataset.id;
-                try {
-                    const response = await fetch(`/admin/api/categories/${id}`, {
-                        method: 'DELETE'
-                    });
-                    const result = await response.json();
-                    if (!response.ok) throw new Error(result.error);
-                    alert(result.message);
-                    loadCategories();
-                } catch (error) {
-                    alert('Error: ' + error.message);
-                }
-            }
-        }
-
-        // Clear form function
-        function clearForm() {
-            document.getElementById('categoryForm').reset();
-            document.getElementById('categoryId').value = '';
-            document.getElementById('submitBtn').textContent = 'Save';
-        }
+    document.addEventListener('DOMContentLoaded', () => {
+        document.querySelectorAll('.edit-category-btn').forEach(btn => {
+            btn.addEventListener('click', () => {
+                const id = btn.dataset.id;
+                const name = btn.dataset.name;
+                const description = btn.dataset.description;
+                editCategory(id, name, description);
+            });
+        });
     });
 </script>
 {% endblock %}

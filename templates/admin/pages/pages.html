@@ -1,0 +1,209 @@
+{% extends "admin_layout.html" %}
+
+{% block title %}Page Management{% endblock %}
+
+{% block content %}
+    <div class="container mt-4">
+        <h1 class="pb-3">Page Management</h1>
+        
+        <!-- Flash messages -->
+        {% with messages = get_flashed_messages(with_categories=true) %}
+            {% if messages %}
+                {% for category, message in messages %}
+                    <div class="alert alert-{{ category }} alert-dismissible fade show" role="alert">
+                        {{ message }}
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                {% endfor %}
+            {% endif %}
+        {% endwith %}
+
+        <!-- Create button -->
+        <button class="btn btn-primary mb-3" data-bs-toggle="modal" data-bs-target="#pageModal" onclick="resetForm()">Create New Page</button>
+
+        <!-- Pages table -->
+        <table class="table table-striped">
+            <thead>
+                <tr>
+                    <th>Title</th>
+                    <th>Slug</th>
+                    <th>Published</th>
+                    <th>Actions</th>
+                </tr>
+            </thead>
+            <tbody id="pagesTable">
+                {% for page in pagination.items %}
+                    <tr>
+                        <td>{{ page.title }}</td>
+                        <td>{{ page.slug }}</td>
+                        <td>{{ 'Yes' if page.is_published else 'No' }}</td>
+                        <td>
+                            <button class="btn btn-sm btn-warning edit-page-btn"
+                                    data-id="{{ page.id }}"
+                                    data-title="{{ page.title }}"
+                                    data-slug="{{ page.slug }}"
+                                    data-content="{{ page.content }}"
+                                    data-is-published="{{ page.is_published }}"
+                                    data-meta-title="{{ page.meta_title or '' }}"
+                                    data-meta-description="{{ page.meta_description or '' }}">Edit</button>
+                            <button class="btn btn-sm btn-danger" onclick="deletePage('{{ page.id }}')">Delete</button>
+                        </td>
+                    </tr>
+                {% endfor %}
+                {% if not pagination.items %}
+                    <tr>
+                        <td colspan="4" class="text-center">No pages found</td>
+                    </tr>
+                {% endif %}
+            </tbody>
+        </table>
+
+        <!-- Pagination -->
+        <nav>
+            <ul class="pagination">
+                <li class="page-item {{ 'disabled' if not pagination.has_prev else '' }}">
+                    <a class="page-link" href="{{ url_for('admin_page_routes.pages', page=pagination.prev_num) if pagination.has_prev else '#' }}" 
+                       {% if not pagination.has_prev %}aria-disabled="true"{% endif %}>Previous</a>
+                </li>
+                {% for page in pagination.iter_pages() %}
+                    {% if page %}
+                        <li class="page-item {% if page == pagination.page %}active{% endif %}">
+                            <a class="page-link" href="{{ url_for('admin_page_routes.pages', page=page) }}">{{ page }}</a>
+                        </li>
+                    {% endif %}
+                {% endfor %}
+                <li class="page-item {{ 'disabled' if not pagination.has_next else '' }}">
+                    <a class="page-link" href="{{ url_for('admin_page_routes.pages', page=pagination.next_num) if pagination.has_next else '#' }}"
+                       {% if not pagination.has_next %}aria-disabled="true"{% endif %}>Next</a>
+                </li>
+            </ul>
+        </nav>
+    </div>
+
+    <!-- Modal -->
+    <div class="modal fade" id="pageModal" tabindex="-1">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="modalTitle">Create Page</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <form id="pageForm">
+                        <input type="hidden" id="pageId">
+                        <div class="mb-3">
+                            <label class="form-label">Title</label>
+                            <input type="text" class="form-control" id="title" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Slug</label>
+                            <input type="text" class="form-control" id="slug" required>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Content</label>
+                            <textarea class="form-control" id="content" rows="5" required></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Meta Title</label>
+                            <input type="text" class="form-control" id="meta_title">
+                        </div>
+                        <div class="mb-3">
+                            <label class="form-label">Meta Description</label>
+                            <textarea class="form-control" id="meta_description" rows="3"></textarea>
+                        </div>
+                        <div class="mb-3">
+                            <div class="form-check">
+                                <input class="form-check-input" type="checkbox" id="is_published">
+                                <label class="form-check-label">Published</label>
+                            </div>
+                        </div>
+                    </form>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" onclick="savePage()">Save</button>
+                </div>
+            </div>
+        </div>
+    </div>
+{% endblock %}
+
+{% block script %}
+    <script>
+        function resetForm() {
+            document.getElementById('pageForm').reset();
+            document.getElementById('pageId').value = '';
+            document.getElementById('modalTitle').textContent = 'Create Page';
+        }
+
+        function editPage(id, title, slug, content, is_published, meta_title, meta_description) {
+            document.getElementById('pageId').value = id;
+            document.getElementById('title').value = title;
+            document.getElementById('slug').value = slug;
+            document.getElementById('content').value = content;
+            document.getElementById('meta_title').value = meta_title;
+            document.getElementById('meta_description').value = meta_description;
+            document.getElementById('is_published').checked = (is_published === 'True' || is_published === true);
+            document.getElementById('modalTitle').textContent = 'Edit Page';
+            new bootstrap.Modal(document.getElementById('pageModal')).show();
+        }
+
+        async function savePage() {
+            const id = document.getElementById('pageId').value;
+            const data = {
+                title: document.getElementById('title').value,
+                slug: document.getElementById('slug').value,
+                content: document.getElementById('content').value,
+                meta_title: document.getElementById('meta_title').value,
+                meta_description: document.getElementById('meta_description').value,
+                is_published: document.getElementById('is_published').checked
+            };
+
+            const url = id ? `/admin/api/page/update/${id}` : '/admin/api/page/create';
+            const response = await fetch(url, {
+                method: 'POST',
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify(data)
+            });
+
+            if (response.ok) {
+                location.reload();
+            } else {
+                const result = await response.json();
+                alert('Error: ' + result.error);
+            }
+        }
+
+        async function deletePage(id) {
+            if (confirm('Are you sure you want to delete this page?')) {
+                const response = await fetch(`/admin/api/page/delete/${id}`, {
+                    method: 'POST',
+                    headers: { 'Content-Type': 'application/json' }
+                });
+
+                if (response.ok) {
+                    location.reload();
+                } else {
+                    const result = await response.json();
+                    alert('Error: ' + result.error);
+                }
+            }
+        }
+
+        document.addEventListener('DOMContentLoaded', () => {
+            // Add event listeners for edit buttons
+            document.querySelectorAll('.edit-page-btn').forEach(btn => {
+                btn.addEventListener('click', () => {
+                    const id = btn.dataset.id;
+                    const title = btn.dataset.title;
+                    const slug = btn.dataset.slug;
+                    const content = btn.dataset.content;
+                    const is_published = btn.dataset.isPublished;
+                    const meta_title = btn.dataset.metaTitle;
+                    const meta_description = btn.dataset.metaDescription;
+                    editPage(id, title, slug, content, is_published, meta_title, meta_description);
+                });
+            });
+        });
+    </script>
+{% endblock %}

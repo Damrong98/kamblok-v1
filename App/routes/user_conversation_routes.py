@@ -2,7 +2,7 @@
 from flask import Blueprint, render_template, jsonify, request, session, redirect, url_for
 # from models.userModel import User
 from App.models.models import User, Conversation, Message
-from database import db
+from App.database import db
 import uuid
 from utils import login_required  # Import from utils
 from App.functions.gemini_fn import (
@@ -35,6 +35,7 @@ Return: jsonify
 """  
 
 @user_conversation_bp.route('/api/conversations/<conversation_id>/exists', methods=['GET'])
+@login_required
 def check_conversation_exists(conversation_id):
     # Query the database for the conversation.
     conversation = Conversation.query.get(conversation_id)
@@ -46,6 +47,7 @@ def check_conversation_exists(conversation_id):
 
 # Funtion use:
 @user_conversation_bp.route('/api/conversations/create', methods=['POST'])
+@login_required
 def create_conversation():
     # current_user = User.query.get(session['user_id'])
     auth_id = session.get('user_id')
@@ -75,6 +77,7 @@ def create_conversation():
 # Update the title generation in update_conversation_title
 # Use Funtion: generate_short_title()
 @user_conversation_bp.route('/api/conversations/update_title', methods=['POST'])
+@login_required
 def update_conversation_title():
     auth_id = session.get('user_id')
     data = request.get_json()

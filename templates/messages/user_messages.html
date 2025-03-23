@@ -14,7 +14,7 @@
         <div id="chatMessage" class="scrollable_chat flex-grow-1">
             <div class="chat_content position-relative">
                  
-                <div class=" text-center mb-4" >
+                <div id="showHeaderText" class="text-center mb-4">
                     <h1>How can I help you today?</h1>
                 </div>
                 <div id="showMessage">
@@ -63,6 +63,29 @@
 
 {% endblock %}
 
+{% block modal %}
+<!-- Bottom Sheet -->
+<div id="bottomSheet" class="bottom-sheet d-flex flex-column justify-content-between gap-1">
+    <div class="bottom-sheet-header">
+        <h5 class="bottom-sheet-title">Prompts</h5>
+        <button class="bottom-sheet-close" onclick="window.hideBottomSheet()">×</button>
+    </div>
+    <div id="bottomSheetBody" class="bottom-sheet-body d-flex flex-column flex-grow-1" style="height: 100%;">
+        <!-- <p>This is the bottom sheet content. You can add any HTML elements here.</p>
+        <p>More content can go here. The sheet will scroll if the content exceeds the max-height.</p> -->
+    
+        {% include "prompts/show_prompts.html" %}
+    </div>
+    <!-- <div class="bottom-sheet-footer">
+        <button class="sheet-btn" onclick="window.hideBottomSheet()">Close</button>
+        <button class="sheet-btn sheet-btn-primary">Save</button>
+    </div> -->
+</div>
+
+<!-- Overlay -->
+<div id="sheetOverlay" class="sheet-overlay" onclick="window.hideBottomSheet()"></div>
+{% endblock %}
+
 {% block script %}
     <script src="https://cdn.jsdelivr.net/npm/markdown-it@13.0.2/dist/markdown-it.min.js"></script>
     <script src="https://cdn.jsdelivr.net/npm/highlight.js@11.9.0/lib/core.min.js"></script>
@@ -71,8 +94,28 @@
     <script src="https://cdnjs.cloudflare.com/ajax/libs/highlight.js/11.7.0/highlight.min.js"></script>
     <!-- User Messages -->
     <script>
-        // Define a global variable for external JS to use
-        // window.conversationId = "{{ conversation_id }}";
+        // Attach to window object
+        window.bottomSheet = document.getElementById('bottomSheet');
+        window.sheetOverlay = document.getElementById('sheetOverlay');
+
+        window.bottomSheetBody = document.getElementById('bottomSheetBody');
+
+        window.showBottomSheet = function() {
+            window.bottomSheet.classList.add('active');
+            window.sheetOverlay.classList.add('active');
+        };
+
+        window.hideBottomSheet = function() {
+            window.bottomSheet.classList.remove('active');
+            window.sheetOverlay.classList.remove('active');
+        };
+
+        // Close with Escape key
+        document.addEventListener('keydown', function(e) {
+            if (e.key === 'Escape' && window.bottomSheet.classList.contains('active')) {
+                window.hideBottomSheet();
+            }
+        });
     </script>
     <script>
         const editStates = {};
@@ -83,13 +126,9 @@
             navigator.clipboard.writeText(textArea.value); // Copies text without selecting
             
             button.textContent = 'Copied';
-            // button.classList.remove('btn-primary');
-            // button.classList.add('btn-success');
             
             setTimeout(() => {
                 button.textContent = 'Copy';
-                // button.classList.remove('btn-success');
-                // button.classList.add('btn-primary');
             }, 1000);
         }
 
@@ -101,32 +140,21 @@
                 textArea.removeAttribute('readonly');
                 textArea.focus();
                 button.textContent = 'Cancel Edit';
-                // button.classList.remove('btn-secondary');
-                // button.classList.add('btn-warning');
                 editStates[textareaId] = true;
             } else {
                 textArea.setAttribute('readonly', 'true');
                 button.textContent = 'Edit';
-                // button.classList.remove('btn-warning');
-                // button.classList.add('btn-secondary');
                 editStates[textareaId] = false;
             }
         }
 
-        // function useAsPrompt(button) {
-        //     const textareaId = button.getAttribute('data-textarea');
-        //     const sourceText = document.getElementById(textareaId).value;
-        //     const targetTextArea = document.getElementById('userPrompt');
-        //     targetTextArea.value = sourceText;
-        //     window.hideBottomSheet();
-        // }
         function useAsPrompt(button) {
             const textareaId = button.getAttribute('data-textarea');
             const sourceText = document.getElementById(textareaId).value;
             const targetTextArea = document.getElementById('userPrompt');
             targetTextArea.value = sourceText;
             elements.toggleButton.disabled = false;
-            adjustHeights()
+            adjustUserPromptHeight();
             window.hideBottomSheet();
         }
     </script>

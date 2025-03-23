@@ -2,71 +2,363 @@
 
 {% block title %}settings{% endblock %}
 
-{% block script %}
-
+{% block style %}
+<style>
+    #authContainerScroll{
+        height: calc(100vh - 60px);
+        overflow-y: scroll;
+        overflow-x: hidden;
+    }
+    .settings-table th{
+        width: 200px;
+    }
+    .settings-table th, 
+    .settings-table td {
+        vertical-align: middle;
+    }
+    .editable-cell {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+    }
+    #flash-messages {
+        position: fixed;
+        top: 20px;
+        right: 20px;
+        z-index: 1000;
+        width: 300px;
+    }
+    .flash-message {
+        margin-bottom: 10px;
+        animation: fadeOut 5s forwards;
+    }
+    @keyframes fadeOut {
+        0% { opacity: 1; }
+        80% { opacity: 1; }
+        100% { opacity: 0; display: none; }
+    }
+</style>
 {% endblock %}
 
 {% block content %}
-    <div class="container py-4">
-        <h3 class="mb-4">Settings</h3>
-        <h5 class="mb-2">Profile</h5>
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="row g-3">
-                    <!-- <div class="col-12 border-bottom pb-2">
-                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">ID:</span>
-                        <span>{{ user.id }}</span>
-                    </div> -->
-                    <div class="col-12 border-bottom pb-2">
-                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Display Name:</span>
-                        <span>{{ user.displayName }}</span>
-                    </div>
-                    <div class="col-12 border-bottom pb-2">
-                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Username:</span>
-                        <span>{{ user.username }}</span>
-                    </div>
-                    <div class="col-12 border-bottom pb-2">
-                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Email:</span>
-                        <span>{{ user.email }}</span>
-                    </div>
-                    <div class="col-12 border-bottom pb-2">
-                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Created:</span>
-                        <span>{{ user.created_at}}</span>
-                    </div>
-                    <div class="col-12 border-bottom pb-2">
-                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Status:</span>
-                        <span class="badge {{ 'bg-success' if user.is_active else 'bg-danger' }} rounded-pill">
-                            {{ 'Active' if user.is_active else 'Inactive' }}
-                        </span>
-                    </div>
-                </div>
-            </div>
-        </div>
+<div id="flash-messages"></div>
 
-        <h5 class="mb-2 mt-4 pt-2">Your account</h5>
-        <div class="card shadow-sm">
-            <div class="card-body">
-                <div class="row g-3">
-                    <div class="col-12 border-bottom pb-2">
-                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Message Limit:</span>
-                        <span class="badge bg-info rounded-pill">
-                            {{ user.message_limit }}/{{ user.max_messages_today }}
-                        </span>
-                    </div>
-                    <div class="col-12 border-bottom pb-2">
-                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Clear chat histories:</span>
-                        <span class="badge bg-danger rounded-pill">
-                            Clear history
-                        </span>
-                    </div>
-                    <div class="col-12 pb-2">
-                        <span class="fw-bold text-muted d-inline-block" style="width: 200px;">Delete account:</span>
-                        <span class="badge bg-danger rounded-pill">
-                            Delete account
-                        </span>
+<div id="authContainerScroll">
+    <div class="container mt-5" style="max-width: 920px;">
+        <h2 class="pb-3">Your informations</h2>
+        <table class="table table-striped settings-table">
+            <tbody>
+                <!-- <tr>
+                    <th>ID</th>
+                    <td>{{ user.id }}</td>
+                </tr> -->
+                <tr>
+                    <th>First Name</th>
+                    <td class="editable-cell">
+                        <span>{{ user.first_name }}</span>
+                        <button class="btn btn-sm btn-primary edit-btn" 
+                                data-field="first_name" 
+                                data-value="{{ user.first_name }}"
+                                data-type="text"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editModal">Edit</button>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Last Name</th>
+                    <td class="editable-cell">
+                        <span>{{ user.last_name }}</span>
+                        <button class="btn btn-sm btn-primary edit-btn" 
+                                data-field="last_name" 
+                                data-value="{{ user.last_name }}"
+                                data-type="text"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editModal">Edit</button>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Username</th>
+                    <td class="editable-cell">
+                        <span>{{ user.username if user.username else 'Not set' }}</span>
+                        <button class="btn btn-sm btn-primary edit-btn" 
+                                data-field="username" 
+                                data-value="{{ user.username|default('') }}"
+                                data-type="text"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editModal">Edit</button>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Date of Birth</th>
+                    <td class="editable-cell">
+                        <span>{{ user.date_of_birth.strftime('%Y-%m-%d') if user.date_of_birth else 'Not set' }}</span>
+                        <button class="btn btn-sm btn-primary edit-btn" 
+                                data-field="date_of_birth" 
+                                data-value="{{ user.date_of_birth.strftime('%Y-%m-%d') if user.date_of_birth else '' }}"
+                                data-type="date"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editModal">Edit</button>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Phone Number</th>
+                    <td class="editable-cell">
+                        <span>{{ user.phone_number if user.phone_number else 'Not set' }}</span>
+                        <button class="btn btn-sm btn-primary edit-btn" 
+                                data-field="phone_number" 
+                                data-value="{{ user.phone_number|default('') }}"
+                                data-type="tel"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editModal">Edit</button>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Email</th>
+                    <td class="editable-cell">
+                        <span>{{ user.email }}</span>
+                        <button class="btn btn-sm btn-primary edit-btn" 
+                                data-field="email" 
+                                data-value="{{ user.email }}"
+                                data-type="email"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editModal">Edit</button>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Password</th>
+                    <td class="editable-cell">
+                        <span>********</span>
+                        <button class="btn btn-sm btn-primary edit-btn" 
+                                data-field="password" 
+                                data-value=""
+                                data-type="password"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editModal">Edit</button>
+                    </td>
+                </tr>
+                <tr>
+                    <th>Picture Url</th>
+                    <td class="editable-cell">
+                        <span>{{ user.picture if user.picture else 'Not set' }}</span>
+                        <button class="btn btn-sm btn-primary edit-btn" 
+                                data-field="picture" 
+                                data-value="{{ user.picture|default('') }}"
+                                data-type="text"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editModal">Edit</button>
+                    </td>
+                </tr>
+                <!-- <tr>
+                    <th>Role</th>
+                    <td class="editable-cell">
+                        <span>{{ user.get_role_name() }}</span>
+                        <button class="btn btn-sm btn-primary edit-btn" 
+                                data-field="role" 
+                                data-value="{{ user.role }}"
+                                data-type="select"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editModal">Edit</button>
+                    </td>
+                </tr> -->
+            </tbody>
+        </table>
+    </div>
+    <div class="container mt-5" style="max-width: 920px;">
+        <h2 class="pb-3">Settings</h2>
+        <table class="table table-striped settings-table">
+            <tbody>
+                
+                <!-- <tr>
+                    <th>Max Messages</th>
+                    <td class="editable-cell">
+                        <span>{{ user.max_messages }}</span>
+                        <button class="btn btn-sm btn-primary edit-btn" 
+                                data-field="max_messages" 
+                                data-value="{{ user.max_messages }}"
+                                data-type="number"
+                                data-bs-toggle="modal" 
+                                data-bs-target="#editModal">Edit</button>
+                    </td>
+                </tr> -->
+                <tr>
+                    <th>Send Limits</th>
+                    <td>{{ user_data.message_limit}}/{{user_data.max_messages_today}}</td>
+                </tr>
+                <tr>
+                    <th>Registration Type</th>
+                    <td>{{ user.registration_type if user.registration_type else 'Not set' }}</td>
+                </tr>
+                <tr>
+                    <th>Last Login</th>
+                    <td>{{ user.last_login if user.last_login else 'Never' }}</td>
+                </tr>
+                <tr>
+                    <th>Is Active</th>
+                    <td>{{ 'Yes' if user.is_active else 'No' }}</td>
+                </tr>
+                <!-- <tr>
+                    <th>Created At</th>
+                    <td>{{ user.created_at }}</td>
+                </tr>
+                <tr>
+                    <th>Updated At</th>
+                    <td>{{ user.updated_at }}</td>
+                </tr> -->
+            </tbody>
+        </table>
+    </div>
+    <div class="container mt-5" style="max-width: 920px;">
+        <h2 class="pb-3">Account Settings</h2>
+        <table class="table table-striped settings-table">
+            <tbody>
+                <tr>
+                    <th>Delate account</th>
+                    <td class="editable-cell">
+                        <span></span>
+                        <button class="btn btn-sm btn-danger edit-btn">Delete</button>
+                    </td>
+                </tr>
+            </tbody>
+        </table>
+    </div>
+    <div class="container mt-5" style="max-width: 920px;"></div>
+</div>
+{% endblock %}
+
+{% block modal %}
+<!-- Single Modal -->
+<div class="modal fade" id="editModal" tabindex="-1">
+    <div class="modal-dialog">
+        <div class="modal-content">
+            <div class="modal-header">
+                <h5 class="modal-title" id="editModalTitle">Edit User Field</h5>
+                <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+            </div>
+            <form id="editForm">
+                <div class="modal-body">
+                    <input type="hidden" name="id" value="{{ user.id }}">
+                    <input type="hidden" name="field" id="editField">
+                    <div class="mb-3">
+                        <label class="form-label" id="editLabel"></label>
+                        <div id="inputContainer"></div>
                     </div>
                 </div>
-            </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="submit" class="btn btn-primary">Save changes</button>
+                </div>
+            </form>
         </div>
     </div>
+</div>
+{% endblock %}
+
+{% block script %}
+<script>
+    document.addEventListener('DOMContentLoaded', function() {
+        const editButtons = document.querySelectorAll('.edit-btn');
+        const modalTitle = document.getElementById('editModalTitle');
+        const editLabel = document.getElementById('editLabel');
+        const inputContainer = document.getElementById('editField');
+        const inputContainerDiv = document.getElementById('inputContainer');
+        const form = document.getElementById('editForm');
+        const modal = new bootstrap.Modal(document.getElementById('editModal'));
+        const flashContainer = document.getElementById('flash-messages');
+
+        function showFlashMessage(message, type = 'success') {
+            const flashDiv = document.createElement('div');
+            flashDiv.className = `alert alert-${type} alert-dismissible fade show flash-message`;
+            flashDiv.role = 'alert';
+            flashDiv.innerHTML = `
+                ${message}
+                <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
+            `;
+            flashContainer.appendChild(flashDiv);
+            setTimeout(() => flashDiv.remove(), 5000);
+        }
+
+        editButtons.forEach(button => {
+            button.addEventListener('click', function() {
+                const field = this.getAttribute('data-field');
+                const value = this.getAttribute('data-value');
+                const type = this.getAttribute('data-type');
+                
+                inputContainer.value = field;
+                const fieldName = field.split('_').map(word => 
+                    word.charAt(0).toUpperCase() + word.slice(1)
+                ).join(' ');
+                modalTitle.textContent = `Edit ${fieldName}`;
+                editLabel.textContent = fieldName;
+
+                inputContainerDiv.innerHTML = '';
+
+                let input;
+                if (type === 'select') {
+                    input = document.createElement('select');
+                    input.className = 'form-control';
+                    input.name = 'value';
+                    const options = [
+                        {value: 0, text: 'User'},
+                        {value: 1, text: 'Admin'},
+                        {value: 2, text: 'Editor'}
+                    ];
+                    options.forEach(opt => {
+                        const option = document.createElement('option');
+                        option.value = opt.value;
+                        option.text = opt.text;
+                        if (opt.value == value) option.selected = true;
+                        input.appendChild(option);
+                    });
+                } else {
+                    input = document.createElement(type === 'textarea' ? 'textarea' : 'input');
+                    input.className = 'form-control';
+                    input.name = 'value';
+                    if (type === 'textarea') input.rows = '4';
+                    else input.type = type;
+                    input.value = value;
+                    if (type === 'number') input.required = true;
+                }
+                inputContainerDiv.appendChild(input);
+            });
+        });
+
+        form.addEventListener('submit', async function(e) {
+            e.preventDefault();
+            
+            const formData = new FormData(form);
+            const data = Object.fromEntries(formData);
+
+            try {
+                const response = await fetch(`/users/${data.id}/update`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json',
+                    },
+                    body: JSON.stringify(data),
+                });
+
+                const result = await response.json();
+                
+                if (result.success) {
+                    const td = document.querySelector(`.edit-btn[data-field="${data.field}"]`).parentElement;
+                    if (data.field === 'role') {
+                        td.querySelector('span').textContent = 
+                            {0: 'User', 1: 'Admin', 2: 'Editor'}[data.value];
+                    } else if (data.field === 'password') {
+                        td.querySelector('span').textContent = '********';
+                    } else {
+                        td.querySelector('span').textContent = data.value || 'Not set';
+                    }
+                    
+                    showFlashMessage('User updated successfully!', 'success');
+                    modal.hide();
+                } else {
+                    showFlashMessage('Error updating user: ' + result.error, 'danger');
+                }
+            } catch (error) {
+                showFlashMessage('Error: ' + error.message, 'danger');
+            }
+        });
+    });
+</script>
 {% endblock %}

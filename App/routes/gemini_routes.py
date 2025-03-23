@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, Response, jsonify, session
 from utils import login_required
 from App.models.models import db, User, Conversation, Message, UserMessageLimit
-from database import db
+from App.database import db
 from datetime import date, datetime
 import uuid
 from App.functions.gemini_fn import (
@@ -22,12 +22,14 @@ model_chat_history = []
 
 # Routes remain largely the same, but use imported functions
 @gemini_api_bp.route("/api/ai/get_stream", methods=["POST"])
+@login_required
 def start_chat():
     userPrompt = request.form["userPrompt"]
     modelApi = request.form["modelApiName"]
     return Response(generate_stream(userPrompt, modelApi), content_type="text/html")
 
 @gemini_api_bp.route("/api/ai/stop_stream", methods=["POST"])
+@login_required
 def stop():
     return jsonify(stop_streaming_response())
 
@@ -45,6 +47,7 @@ Chat
 
 # API endpoint to set chat history
 @gemini_api_bp.route('/set_chat_history', methods=['POST'])
+@login_required
 def set_chat_history():
     global chat_history
     data = request.get_json()  # Get JSON data from the request

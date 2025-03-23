@@ -12,7 +12,13 @@
 </head>
 <body>
     <div class="auth-container">
-        <h1 class="text-center">Start Registration</h1>
+        <h1 class="text-center">
+            <!-- Start Registration -->
+             <!-- Login -->
+            <div class="appLogo">
+                    
+            </div>
+        </h1>
         <p class="subtitle text-center">Enter your email to begin</p>
         <div id="alert-container"></div>
         <div class="mb-3">
@@ -69,6 +75,27 @@
             // Redirect to /registration with encoded email
             window.location.href = `/registration?email=${encodeURIComponent(encodedEmail)}`;
         });
+    </script>
+    <script>
+        function getLogoAndCssFromSystemSettings() {
+            fetch("/admin/api/system_settings/get_logoAndCSS")
+                .then(response => response.json())
+                .then(data => {
+                    if (data.logo_html) {
+                        document.querySelectorAll(".appLogo").forEach(element => {
+                            element.innerHTML = data.logo_html;
+                        });
+                    }
+                    if (data.custom_css) {
+                        const styleElement = document.createElement("style");
+                        styleElement.textContent = data.custom_css;
+                        document.head.appendChild(styleElement);
+                    }
+                })
+                .catch(error => console.error("Error fetching settings:", error));
+        }
+
+        document.addEventListener("DOMContentLoaded", getLogoAndCssFromSystemSettings);
     </script>
 </body>
 </html>

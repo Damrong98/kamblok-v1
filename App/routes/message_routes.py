@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, Response, jsonify, session
 from utils import login_required
 from App.models.models import User, Conversation, Message, UserMessageLimit
-from database import db
+from App.database import db
 from datetime import date, datetime
 import uuid
 from App.functions.gemini_fn import (
@@ -71,6 +71,7 @@ def get_messages_by_conversationID(conversation_id):
 # Udate Chat History (chat_history, model_chat_history)
 # use in user_message.js
 @message_bp.route('/api/messages/send', methods=['POST'])
+@login_required
 def send_message():
     """
     Create a new message and update chat history
@@ -100,11 +101,11 @@ def send_message():
             conversation_id=message_data.get('conversionID'),  # Fixed typo from 'conversionID'
             sender=message_data.get('sender'),
             message_text=message_data.get('fullResponseText'),
-            message_html=message_data.get('fullResponseText'),
+            message_html=message_data.get('renderedContent'),
             # api_response_time=0.8  # Uncomment and modify if needed
         )
         
-        print("Message:", new_message)
+        # print("Message:", new_message)
         
         # # Update model_chat_history using utility function
         # update_model_chat_history(new_message.sender, new_message.message_text)

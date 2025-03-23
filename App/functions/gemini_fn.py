@@ -3,12 +3,32 @@ from google import genai
 import html
 import time
 from dotenv import load_dotenv
+from App.models.system_settings import SystemSettings
 
 # Initialize environment variables
 load_dotenv()
 
+
+# Function to get the API key from SystemSettings
+# def get_model_api_key():
+#     try:
+#         # Query the SystemSettings table (assuming there's at least one row)
+#         settings = SystemSettings.query.first()  # Get the first record
+#         if settings and settings.model_api_key:
+#             return settings.model_api_key
+#         else:
+#             # Fallback to environment variable if no key is found in DB
+#             return os.getenv("GEMINI_API_KEY", "default")
+#     except Exception as e:
+#         print(f"Error retrieving API key from database: {e}")
+#         return os.getenv("GEMINI_API_KEY", "default")
+    
+# # Configure Google Gemini API with the key from SystemSettings
+# client = genai.Client(api_key=get_model_api_key())
+
 # Configure Google Gemini API
 client = genai.Client(api_key=os.getenv("GEMINI_API_KEY"))
+
 
 # Global stop flag
 stop_streaming = False
@@ -73,6 +93,7 @@ def generate_stream(userPrompt, modelApi):
             yield f"<p style='color: red;'>Error: {html.escape(str(e))}</p>\n"
     
     return generate()
+
 
 """Function"""
 def set_model_chat_history(messages):

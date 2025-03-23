@@ -1,7 +1,7 @@
 from flask import Flask
-from database import db
+from App.database import db
 from App.models.models import User, Conversation, Message, Prompt  # Import from your models.py
-from App.models.system_settings import SystemSettings
+from App.models.system_settings import SystemSettings, Page
 from app import app
 import uuid
 
@@ -9,16 +9,6 @@ import uuid
 with app.app_context():
     db.drop_all()  # Optional: ensures all old tables are dropped
     db.create_all()  # Creates tables based on current models
-
-
-    # Seed SystemSettings (if not already present)
-    if not db.session.query(SystemSettings).first():
-        default_settings = SystemSettings(max_messages=5)
-        db.session.add(default_settings)
-        db.session.commit()
-        print("✅ SystemSettings seeded successfully!")
-    else:
-        print("ℹ️ SystemSettings already exists, skipping seed.")
 
     # Add User 1
     admin = User(

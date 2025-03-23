@@ -1,7 +1,7 @@
 from flask import Blueprint, render_template, request, flash, redirect, url_for, jsonify, current_app, session
 from App.models.models import User 
 from App.models.system_settings import SystemSettings
-from database import db
+from App.database import db
 from flask_mail import Message
 import random
 from datetime import datetime, timedelta
@@ -82,7 +82,75 @@ def send_verification_code():
         }
 
         msg = Message('Verify Your Email', recipients=[email])
-        msg.body = f'Your verification code is: {code}\nThis code will expire in 1 minute.'
+        # msg.body = f'Your verification code is: {code}\nThis code will expire in 2 minute.'
+        msg.html = f"""
+        <html>
+            <head>
+                <style>
+                    body {{
+                        font-family: Arial, sans-serif;
+                        line-height: 1.6;
+                        color: #333333;
+                        max-width: 600px;
+                        margin: 0 auto;
+                        padding: 20px;
+                    }}
+                    .container {{
+                        background-color: #f9f9f9;
+                        border-radius: 8px;
+                        padding: 30px;
+                        box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+                    }}
+                    .logo {{
+                        text-align: center;
+                        margin-bottom: 20px;
+                        font-size: 28px;
+                        font-weight: bold;
+                        text-transform: uppercase;
+                        letter-spacing: 2px;
+                    }}
+                    h2 {{
+                        color: #2c3e50;
+                        margin-top: 0;
+                        border-bottom: 2px solid #3498db;
+                        padding-bottom: 10px;
+                    }}
+                    .code-box {{
+                        background-color: #ffffff;
+                        border: 2px solid #3498db;
+                        border-radius: 4px;
+                        padding: 15px;
+                        text-align: center;
+                        margin: 20px 0;
+                        font-size: 24px;
+                        font-weight: bold;
+                        color: #2c3e50;
+                    }}
+                    .footer {{
+                        font-size: 12px;
+                        color: #666666;
+                        margin-top: 20px;
+                        padding-top: 10px;
+                        border-top: 1px solid #eeeeee;
+                    }}
+                </style>
+            </head>
+            <body>
+                <div class="container">
+                    <div class="logo">Kamblok</div>
+                    <h2>Email Verification</h2>
+                    <p>Hello,</p>
+                    <p>Please use the following verification code to complete your email verification:</p>
+                    <div class="code-box">{code}</div>
+                    <p>This code will expire in 2 minutes. If you didn't request this verification, 
+                       please disregard this email.</p>
+                    <div class="footer">
+                        <p>This is an automated message. Please do not reply directly to this email.</p>
+                    </div>
+                </div>
+            </body>
+        </html>
+        """
         try:
             current_app.mail.send(msg)
             return jsonify({

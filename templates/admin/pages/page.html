@@ -1,0 +1,17 @@
+{% extends "guest_layout.html" %}
+
+{% block content %}
+    
+    {{ page.content | safe }}
+    <p>Last updated: {{ page.updated_at.strftime('%Y-%m-%d %H:%M:%S') }}</p>
+    <div id="page-info"></div>
+{% endblock %}
+
+{% block scripts %}
+    <script>
+        document.addEventListener('DOMContentLoaded', function() {
+            const infoDiv = document.getElementById('page-info');
+            infoDiv.innerHTML = '<p>Page loaded on: ' + new Date().toLocaleString() + '</p>';
+        });
+    </script>
+{% endblock %}

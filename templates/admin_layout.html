@@ -5,79 +5,252 @@
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{% block title %}{% endblock %}</title>
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.3/dist/css/bootstrap.min.css" rel="stylesheet" integrity="sha384-QWTKZyjpPEjISv5WaRU9OFeRpok6YctnYmDr5pNlyT2bRjXh0JMhjY6hW+ALEwIH" crossorigin="anonymous">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.1/css/all.min.css">
     {% block style %}{% endblock %}
+    <style>
+        :root {
+            --sidebar-width: 260px;
+            --sidebar-collapsed-width: 70px;
+            --primary-color: #2c3e50;
+            --hover-color: #3498db;
+        }
+
+        body {
+            background: #f5f6fa;
+            font-family: 'Segoe UI', sans-serif;
+        }
+
+        .sidebar {
+            height: 100vh;
+            width: var(--sidebar-width);
+            position: fixed;
+            top: 0;
+            left: 0;
+            transition: all 0.3s ease;
+            background: var(--primary-color);
+            color: white;
+            overflow-y: auto;
+            box-shadow: 2px 0 10px rgba(0,0,0,0.1);
+        }
+
+        .sidebar.collapsed {
+            width: var(--sidebar-collapsed-width);
+        }
+
+        .content-wrapper {
+            margin-left: var(--sidebar-width);
+            transition: all 0.3s ease;
+            min-height: 100vh;
+        }
+
+        .sidebar.collapsed + .content-wrapper {
+            margin-left: var(--sidebar-collapsed-width);
+        }
+
+        .sidebar-item {
+            padding: 15px 20px;
+            display: flex;
+            align-items: center;
+            color: white;
+            text-decoration: none;
+            transition: all 0.3s ease;
+        }
+
+        .sidebar-item:hover {
+            background: rgba(255,255,255,0.1);
+            padding-left: 25px;
+        }
+
+        .sidebar-item.home:hover {
+            background: var(--hover-color);
+            transform: translateX(5px);
+            box-shadow: 0 2px 10px rgba(0,0,0,0.2);
+        }
+
+        .sidebar-item-text {
+            transition: opacity 0.2s ease;
+        }
+
+        .sidebar.collapsed .sidebar-item-text {
+            opacity: 0;
+            width: 0;
+            overflow: hidden;
+        }
+
+        .profile-img {
+            width: 40px;
+            height: 40px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid #fff;
+            transition: transform 0.3s ease;
+        }
+
+        .profile-img:hover {
+            transform: scale(1.1);
+        }
+
+        header {
+            background: white;
+            border-bottom: 1px solid #eee;
+            height: 60px;
+            padding: 0 20px !important;
+        }
+
+        @media (max-width: 768px) {
+            .sidebar {
+                transform: translateX(-100%);
+                width: var(--sidebar-width);
+                z-index: 999;
+            }
+            
+            .sidebar.show-mobile {
+                transform: translateX(0);
+            }
+            
+            .content-wrapper {
+                margin-left: 0;
+            }
+            
+            .overlay.show {
+                display: block;
+                position: fixed;
+                top: 0;
+                left: 0;
+                width: 100%;
+                height: 100%;
+                background: rgba(0,0,0,0.5);
+                z-index: 998;
+            }
+        }
+    </style>
 </head>
 <body>
-    
-    <main class="layout_container">
-        <!-- Sidebar -->
-        <div id="sidebar" class="sidebar hide_sidebar d-flex flex-column justify-content-between gap-1">
-            <div class="sidebar_header">
-                <!-- <span style="font-size: 20px; cursor: pointer; margin-right: 10px;" onclick="toggleMenu()" class="menu-icon">&#9776;</span> -->
-                <div class="appLogo">
-
+    <!-- Sidebar -->
+    <nav id="sidebar" class="sidebar">
+        <div class="d-flex flex-column h-100">
+            <!-- Logo -->
+            <div class="p-3 border-bottom">
+                <div class="d-flex align-items-center">
+                    <!-- <i class="fas fa-robot fs-4 me-2"></i> -->
+                    <span class="sidebar-item-text fw-bold">Kamblok Admin</span>
                 </div>
             </div>
-            <div class="sidebar_container">
-                <a 
-                    class="btn btn-primary" 
-                    href="{{ url_for('user_conversation_routes.user_new_chat') }}"
-                >New chat</a>
+
+            <!-- Menu Items -->
+            <div class="flex-grow-1 py-2">
+                <a href="{{ url_for('user_conversation_routes.user_new_chat') }}" class="sidebar-item home">
+                    <i class="fas fa-arrow-left me-3"></i>
+                    <span class="sidebar-item-text">Go Back</span>
+                </a>
+                <a href="{{ url_for('admin_system_settings_routes.system_settings') }}" class="sidebar-item">
+                    <i class="fas fa-cog me-3"></i>
+                    <span class="sidebar-item-text">System Settings</span>
+                </a>
+                <a href="{{ url_for('admin_user_routes.users') }}" class="sidebar-item">
+                    <i class="fas fa-users me-3"></i>
+                    <span class="sidebar-item-text">Users</span>
+                </a>
+                <a href="{{ url_for('admin_page_routes.pages') }}" class="sidebar-item">
+                    <i class="fas fa-file-alt me-3"></i>
+                    <span class="sidebar-item-text">Pages</span>
+                </a>
+                <a href="{{ url_for('admin_prompt_routes.prompts') }}" class="sidebar-item">
+                    <i class="fas fa-terminal me-3"></i>
+                    <span class="sidebar-item-text">Prompts</span>
+                </a>
+                <div class="ms-3">
+                    <a href="{{ url_for('admin_category_routes.categories') }}" class="sidebar-item">
+                        <i class="fas fa-folder me-3"></i>
+                        <span class="sidebar-item-text">Categories</span>
+                    </a>
+                    <a href="{{ url_for('admin_language_routes.languages') }}" class="sidebar-item">
+                        <i class="fas fa-globe me-3"></i>
+                        <span class="sidebar-item-text">Languages</span>
+                    </a>
+                </div>
             </div>
-            <div class="sidebar_container flex-grow-1">
-                <div id="conversations-container2">
-                    <a 
-                        class="" 
-                        href="{{ url_for('admin_system_settings_routes.system_settings') }}"
-                    >System settings</a>
-                    <a 
-                        class="" 
-                        href="{{ url_for('admin_user_routes.user') }}"
-                    >User</a>
-                    <a 
-                        class="" 
-                        href="{{ url_for('admin_prompt_routes.prompt') }}"
-                    >Prompt</a>
-                    <div class="ms-3">
-                        <a 
-                            class="" 
-                            href="{{ url_for('admin_category_routes.category') }}"
-                        >Category</a>
-                        <a 
-                            class="" 
-                            href="{{ url_for('admin_language_routes.language') }}"
-                        >Language</a>
+        </div>
+    </nav>
+
+    <!-- Overlay -->
+    <div id="overlay" class="overlay" onclick="toggleMobileMenu()"></div>
+
+    <!-- Content -->
+    <div class="content-wrapper">
+        <header class="">
+            <div class="d-flex justify-content-between align-items-center h-100">
+                <div>
+                    <button class="btn btn-outline-dark d-md-none" onclick="toggleMobileMenu()">
+                        <i class="fas fa-bars"></i>
+                    </button>
+                </div>
+                <div class="profile-container">
+
+                    <button id="userInfo" class="dropdown-toggle btn_profile" type="button" data-bs-toggle="dropdown" aria-expanded="false">
+                    </button>
+                    <div class="dropdown-menu">
+                        <a href="{{ url_for('auth.get_auth', auth_id=session['user_id']) }}" class="dropdown-menu-profile">
+                            <!-- <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-person me-2" viewBox="0 0 16 16">
+                                <path d="M8 8a3 3 0 1 0 0-6 3 3 0 0 0 0 6zm2-3a2 2 0 1 1-4 0 2 2 0 0 1 4 0zm4 8c0 1-1 1-1 1H3s-1 0-1-1 1-4 6-4 6 3 6 4zm-1-.004c-.001-.246-.154-.986-.832-1.664C11.516 10.68 10.289 10 8 10c-2.29 0-3.516.68-4.168 1.332-.678.678-.83 1.418-.832 1.664h10z"/>
+                            </svg>
+                            Profile -->
+                            <div id="currentUserName"></div>
+                        </a>
+                        <a href="{{ url_for('auth.get_auth', auth_id=session['user_id']) }}" class="dropdown-menu-profile">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-gear me-2" viewBox="0 0 16 16">
+                                <path d="M8 4.754a3.246 3.246 0 1 0 0 6.492 3.246 3.246 0 0 0 0-6.492zM5.754 8a2.246 2.246 0 1 1 4.492 0 2.246 2.246 0 0 1-4.492 0z"/>
+                                <path d="M9.796 1.343c-.527-1.79-3.065-1.79-3.592 0l-.094.319a.873.873 0 0 1-1.255.52l-.292-.16c-1.64-.892-3.433.902-2.54 2.541l.159.292a.873.873 0 0 1-.52 1.255l-.319.094c-1.79.527-1.79 3.065 0 3.592l.319.094a.873.873 0 0 1 .52 1.255l-.16.292c-.892 1.64.901 3.434 2.541 2.54l.292-.159a.873.873 0 0 1 1.255.52l.094.319c.527 1.79 3.065 1.79 3.592 0l.094-.319a.873.873 0 0 1 1.255-.52l.292.16c1.64.893 3.434-.902 2.54-2.541l-.159-.292a.873.873 0 0 1 .52-1.255l.319-.094c1.79-.527 1.79-3.065 0-3.592l-.319-.094a.873.873 0 0 1-.52-1.255l.16-.292c.893-1.64-.902-3.433-2.541-2.54l-.292.159a.873.873 0 0 1-1.255-.52l-.094-.319zm-2.633.283c.246-.835 1.428-.835 1.674 0l.094.319a1.873 1.873 0 0 0 2.693 1.115l.291-.16c.764-.415 1.6.42 1.184 1.185l-.159.292a1.873 1.873 0 0 0 1.116 2.692l.318.094c.835.246.835 1.428 0 1.674l-.319.094a1.873 1.873 0 0 0-1.115 2.693l.16.291c.415.764-.42 1.6-1.185 1.184l-.291-.159a1.873 1.873 0 0 0-2.693 1.116l-.094.318c-.246.835-1.428.835-1.674 0l-.094-.319a1.873 1.873 0 0 0-2.692-1.115l-.292.16c-.764.415-1.6-.42-1.184-1.185l.159-.291A1.873 1.873 0 0 0 1.945 8.93l-.319-.094c-.835-.246-.835-1.428 0-1.674l.319-.094A1.873 1.873 0 0 0 3.06 4.377l-.16-.292c-.415-.764.42-1.6 1.185-1.184l.292.159a1.873 1.873 0 0 0 2.692-1.115l.094-.319z"/>
+                            </svg>
+                            Settings
+                        </a>
+                        <div id="roleAllowed" class=""></div>
+                        <hr class="dropdown-divider">
+                        <a href="{{ url_for('auth.logout') }}" class="dropdown-menu-profile">
+                            <svg xmlns="http://www.w3.org/2000/svg" width="16" height="16" fill="currentColor" class="bi bi-box-arrow-right me-2" viewBox="0 0 16 16">
+                                <path fill-rule="evenodd" d="M10 12.5a.5.5 0 0 1-.5.5h-8a.5.5 0 0 1-.5-.5v-9a.5.5 0 0 1 .5-.5h8a.5.5 0 0 1 .5.5v2a.5.5 0 0 0 1 0v-2A1.5 1.5 0 0 0 9.5 2h-8A1.5 1.5 0 0 0 0 3.5v9A1.5 1.5 0 0 0 1.5 14h8a1.5 1.5 0 0 0 1.5-1.5v-2a.5.5 0 0 0-1 0v2z"/>
+                                <path fill-rule="evenodd" d="M15.854 8.354a.5.5 0 0 0 0-.708l-3-3a.5.5 0 0 0-.708.708L14.293 7.5H5.5a.5.5 0 0 0 0 1h8.793l-2.147 2.146a.5.5 0 0 0 .708.708l3-3z"/>
+                            </svg>
+                            Logout
+                        </a>
+                        
                     </div>
                 </div>
             </div>
-            <div class="sidebar_container mb-4">
-                <a 
-                    class="btn btn-primary" 
-                >Setting</a>
-            </div>
-        </div>
-        <!-- Sidebar Overlay -->
-        <div id="overlay" class="overlay" onclick="toggleMenu()"></div>
-
-        <!-- Start content -->
-        <div id="contentBody" class="content_body show_content bg-light">
-            <!-- Header -->
-            {% include "layouts/Header.html" %}
-
-            <!-- Content -->
-            {% block content %}
-            
-            {% endblock %}
-        </div>
-
-    </main>
+        </header>
+        <main class="container-fluid p-4">
+            {% block content %}{% endblock %}
+        </main>
+    </div>
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
-    <script src="{{ url_for('static', filename='js/layout.js') }}"></script>
     <script src="{{ url_for('static', filename='js/layout_api.js') }}"></script>
+    <script>
+        const sidebar = document.getElementById('sidebar');
+        const overlay = document.getElementById('overlay');
 
+        // Mobile menu toggle
+        function toggleMobileMenu() {
+            sidebar.classList.toggle('show-mobile');
+            overlay.classList.toggle('show');
+        }
+
+        // Close mobile menu on link click
+        document.querySelectorAll('.sidebar-item').forEach(link => {
+            link.addEventListener('click', () => {
+                if (window.innerWidth <= 768) {
+                    toggleMobileMenu();
+                }
+            });
+        });
+
+        // Adjust layout on resize
+        window.addEventListener('resize', () => {
+            if (window.innerWidth > 768 && sidebar.classList.contains('show-mobile')) {
+                toggleMobileMenu();
+            }
+        });
+    </script>
     {% block script %}{% endblock %}
-
 </body>
 </html>

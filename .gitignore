@@ -1,2 +1,11 @@
+# .gitignore
+__pycache__
+*.pyc
+*.pyo
+*.pyd
+.Python
+env/
+venv/
+*.db
 .env
-google_client_secret.json
+migrations/

@@ -1,5 +1,6 @@
 from flask import Blueprint, jsonify, session
 from App.functions.user_message_limit_fn import check_and_update_message_limit  # Import the function
+from utils import login_required  # Import from utils
 
 
 
@@ -9,6 +10,7 @@ user_message_limit_bp = Blueprint('user_message_limit_routes', __name__, static_
 
 # routes api  
 @user_message_limit_bp.route('/api/user_message_limit/check_limit', methods=['POST'])
+@login_required
 def check_message_limit_for_today_api():
     auth_id = session.get('user_id')
 

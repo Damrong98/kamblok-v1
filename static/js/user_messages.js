@@ -28,6 +28,7 @@ const elements = {
     toggleButton: document.getElementById("toggleButton"),
     chatInput: document.getElementById("chatInput"),
     scrollToBottomBtn: document.getElementById("scrollToBottomBtn"), // New element
+    showHeaderText: document.getElementById("showHeaderText"),
 };  
 
 let startButtonSvg = `
@@ -165,7 +166,7 @@ function formatChunk(text, codeBuffer, inCodeBlock, lang) {
 function streamResponse(userPrompt, modelContent) {
     const api = globalModelApi();
     modelApiName = api.getActiveModel().modelValue;
-    console.log(modelApiName);
+    // console.log(modelApiName);
 
     fetch("/api/ai/get_stream", {
         method: "POST",
@@ -338,12 +339,13 @@ async function toggleChat() {
             elements.chatContainer.classList.add('justify-content-between');
             elements.chatContainer.classList.remove('justify-content-center');
             elements.chatMessage.classList.add('flex-grow-1');
+            // elements.showHeaderText.classList.add('d-none');
         }
 
         // check user send limit for today
         canSend = await checkMessageLimit();
         if (!canSend) {
-            console.log("checkMessageLimit():", "You reach 10 messages!")
+            // console.log("checkMessageLimit():", "You reach 10 messages!")
             // Create the alert addNewChatFromLayout
             let alertDiv = document.createElement("div");
             alertDiv.className = "alert alert-warning d-flex align-items-center justify-content-between";
@@ -352,9 +354,9 @@ async function toggleChat() {
                 <div>
                     <strong>Oops!</strong> You've reached your daily message limit for today.
                 </div>
-                <button type="button" class="btn btn-primary btn-sm">
+                <a href="/page/upgrade" class="btn btn-primary btn-sm">
                     Upgrade Now
-                </button>`;
+                </a>`;
             elements.showMessage.appendChild(alertDiv);
             elements.userPrompt.disabled = true;
             scrollToBottomManually()
@@ -421,19 +423,11 @@ async function setChatHistory(newMessages) {
             body: JSON.stringify({ chat_history: newMessages })
         });
         const data = await response.json();
-        console.log('setChatHistory:', data);
-        // renderMessages(data)
+        // console.log('setChatHistory:', data);
     } catch (error) {
         console.error('Error setting chat history:', error);
     }
 }
-
-// function clearChat() {
-//     fetch("/clear_history", { method: "POST" })
-//         .then(response => response.json())
-//         .catch(err => console.error("Clear error:", err))
-//         .then(() => elements.showMessage.innerHTML = "");
-// }
 
 /*
 * Title: Function for set global variable
@@ -518,10 +512,10 @@ async function checkMessageLimit() {
 
         // Handle the response
         if (data.status === 'success') {
-            console.log(data.message); // "Message sent successfully"
+            // console.log(data.message); // "Message sent successfully"
             return true;
         } else {
-            console.log(data.message); // "Message limit reached"
+            // console.log(data.message); // "Message limit reached"
             return false;
         }
 
@@ -548,6 +542,7 @@ document.addEventListener('DOMContentLoaded', () => {
         elements.chatContainer.classList.remove('justify-content-between');
         elements.chatContainer.classList.add('justify-content-center');
         elements.chatMessage.classList.remove('flex-grow-1');
+        // elements.showHeaderText.classList.remove('d-none');
         return
     }
 
@@ -560,7 +555,7 @@ document.addEventListener('DOMContentLoaded', () => {
     // Scroll event listener
     chatMessage.addEventListener('scroll', () => {
         if (chatMessage.scrollTop === 0 && !isLoading && hasMore) {
-            console.log("Top", conversationId)
+            // console.log("Top", conversationId)
             getMessageByCoversatonId(conversationId);
         }
     });
@@ -605,13 +600,6 @@ document.addEventListener('DOMContentLoaded', () => {
     }
 
     function createMessageElement(message) {
-        // const div = document.createElement('div');
-        // div.className = 'message'; // Add your own styling class
-        // div.innerHTML = `
-        //     <div class="sender">${message.sender}</div>
-        //     <div class="content">${message.message_html || message.message_text}</div>
-        //     <div class="timestamp">${new Date(message.timestamp).toLocaleString()}</div>
-        // `;
         const messageElement = document.createElement('div');
         messageElement.classList.add('message', 
             message.sender === 'user' ? 'user' : 'model');
@@ -674,7 +662,7 @@ async function createConversationDB_id() {
         const data = await response.json();
         
         if (data.status === 'success') {
-            console.log("Conversation:", data);
+            // console.log("Conversation:", data);
             // return data.conversation_id;
             return data.id;
         }
@@ -688,7 +676,7 @@ async function createConversationDB_id() {
 
 async function updateConversationTitle(conversationId, newPrompt) {
     try {
-        console.log('Sending request:', { conversationId, newPrompt });
+        // console.log('Sending request:', { conversationId, newPrompt });
         const response = await fetch('/api/conversations/update_title', {
             method: 'POST',
             headers: {
@@ -706,10 +694,10 @@ async function updateConversationTitle(conversationId, newPrompt) {
         }
 
         const data = await response.json();
-        console.log("datatsss", data)
+        // console.log("datatsss", data)
 
         if (data.status === 'success') {
-            console.log(`Conversation title set to: ${data.title}`);
+            // console.log(`Conversation title set to: ${data.title}`);
             // document.getElementById("titleResult").innerHTML = `<h2>${data.title}</h2>`;
             const addNewChatFromLayout = document.getElementById('addNewChat');
             addNewChatFromLayout.innerHTML = `
@@ -731,13 +719,13 @@ async function updateConversationTitle(conversationId, newPrompt) {
 }
 
 // Save data to database
-async function sendMessageDB(senderRole, fullResponseText, renderContent) {
+async function sendMessageDB(senderRole, renderedContent, fullResponseText) {
 
     // If conversationId is empty or not found, create a new one
     if (!conversationId || conversationId === '') {
         conversationId = await createConversationDB_id();
         if (!conversationId) {
-            console.error('Failed to create conversation ID');
+            // console.error('Failed to create conversation ID');
             return false;
         }
         // Optionally update URL with new conversation ID
@@ -747,8 +735,8 @@ async function sendMessageDB(senderRole, fullResponseText, renderContent) {
     const messageData = {
         conversionID: conversationId,
         sender: senderRole,
-        fullResponseText: fullResponseText,
-        renderContent: renderContent
+        renderedContent: renderedContent,
+        fullResponseText: fullResponseText
     };
 
     try {

@@ -1,21 +1,25 @@
 # admin_category_routes.py
-from flask import Blueprint, render_template, jsonify, request, session, redirect, url_for
+from flask import Blueprint, render_template, jsonify, request, session, redirect, url_for, flash
 # from models.userModel import User
 from App.models.models import User, Prompt, Category, Language
-from database import db
-from utils import login_required  # Import from utils
+from App.database import db
+from utils import role_required # Import from utils
 
 admin_language_bp = Blueprint('admin_language_routes', __name__)
 
 # Routes
-@admin_language_bp.route('/lanugage')
-def language():
-    return render_template('/admin/language/language.html')
+@admin_language_bp.route('/languages', methods=['GET'])
+@role_required(1,2)
+def languages():
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    pagination = Language.query.order_by(Language.created_at.desc()).paginate(page=page, per_page=per_page)
+    return render_template('/admin/language/language.html', pagination=pagination)
 
-# Create
-@admin_language_bp.route('/api/languages', methods=['POST'])
+@admin_language_bp.route('/api/language/create', methods=['POST'])
+@role_required(1,2)
 def create_language():
-    data = request.get_json()
+    data = request.json
     try:
         language = Language(
             code=data['code'],
@@ -23,57 +27,55 @@ def create_language():
         )
         db.session.add(language)
         db.session.commit()
-        return jsonify({'message': 'Language created successfully', 'id': language.id}), 201
+        flash('Language created successfully!', 'success')
+        return jsonify({'success': True, 'id': language.id})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        flash(f'Error creating language: {str(e)}', 'danger')
+        return jsonify({'success': False, 'error': str(e)}), 400
 
-# Read all
-@admin_language_bp.route('/api/languages', methods=['GET'])
-def get_languages():
-    languages = Language.query.all()
-    return jsonify([{
-        'id': lang.id,
-        'code': lang.code,
-        'name': lang.name,
-        'created_at': lang.created_at.isoformat(),
-        'updated_at': lang.updated_at.isoformat()
-    } for lang in languages])
-
-# Read one
-@admin_language_bp.route('/api/languages/<id>', methods=['GET'])
-def get_language(id):
-    language = Language.query.get_or_404(id)
-    return jsonify({
-        'id': language.id,
-        'code': language.code,
-        'name': language.name,
-        'created_at': language.created_at.isoformat(),
-        'updated_at': language.updated_at.isoformat()
-    })
-
-# Update
-@admin_language_bp.route('/api/languages/<id>', methods=['PUT'])
+@admin_language_bp.route('/api/language/update/<id>', methods=['POST'])
+@role_required(1)
 def update_language(id):
     language = Language.query.get_or_404(id)
-    data = request.get_json()
+    data = request.json
     try:
         language.code = data['code']
         language.name = data['name']
         db.session.commit()
-        return jsonify({'message': 'Language updated successfully'})
+        flash('Language updated successfully!', 'success')
+        return jsonify({'success': True})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        flash(f'Error updating language: {str(e)}', 'danger')
+        return jsonify({'success': False, 'error': str(e)}), 400
 
-# Delete
-@admin_language_bp.route('/api/languages/<id>', methods=['DELETE'])
+@admin_language_bp.route('/api/language/delete/<id>', methods=['POST'])
+@role_required(1)
 def delete_language(id):
     language = Language.query.get_or_404(id)
     try:
+        if language.status == 'default':
+            flash('Cannot delete default language!', 'danger')
+            return jsonify({'success': False, 'error': 'Cannot delete default language'}), 400
         db.session.delete(language)
         db.session.commit()
-        return jsonify({'message': 'Language deleted successfully'})
+        flash('Language deleted successfully!', 'success')
+        return jsonify({'success': True})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        flash(f'Error deleting language: {str(e)}', 'danger')
+        return jsonify({'success': False, 'error': str(e)}), 400
+
+@admin_language_bp.route('/api/language/set-default/<id>', methods=['POST'])
+@role_required(1)
+def set_default_language(id):
+    language = Language.query.get_or_404(id)
+    try:
+        language.set_as_default()
+        flash('Language set as default successfully!', 'success')
+        return jsonify({'success': True})
+    except Exception as e:
+        db.session.rollback()
+        flash(f'Error setting default language: {str(e)}', 'danger')
+        return jsonify({'success': False, 'error': str(e)}), 400

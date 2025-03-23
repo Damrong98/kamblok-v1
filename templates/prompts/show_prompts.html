@@ -4,12 +4,11 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Prompt Viewer</title>
-    <!-- <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet"> -->
     <style>
         #promptScroll {
             border: 1px solid #ccc;
             padding: 10px;
-            height: 500px; /* Adjust as needed */
+            height: 600px; /* Adjust as needed */
         }
         .loading {
             text-align: center;
@@ -32,7 +31,6 @@
                 </div>
                 <div>
                     <select id="language-select" class="form-select form-select-sm">
-                        <option value="" selected>All Languages</option>
                         <!-- Languages will be populated dynamically -->
                     </select>
                 </div>
@@ -47,12 +45,11 @@
         </div>
     </div>
 
-    <!-- <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script> -->
     <script>
         document.addEventListener('DOMContentLoaded', () => {
             let categoryID = null; // Default to no category filter
-            let languageID = null; // Default to no language filter
-            let fetchAll = true;   // Start with "All" tab active
+            let languageID = null; // Will be set to default language if exists
+            let fetchAll = false;  // Will be false if default language exists
             let currentPage = 1;
             let isLoading = false;
             let hasNext = true;
@@ -67,23 +64,20 @@
             // Load categories dynamically with "All" tab
             async function loadCategories() {
                 try {
-                    // Add "All" tab first
                     const allTab = document.createElement('button');
                     allTab.className = 'tab-button btn btn-sm me-1 active';
-                    allTab.dataset.categoryId = ''; // Empty for "All"
+                    allTab.dataset.categoryId = '';
                     allTab.textContent = 'All';
                     allTab.addEventListener('click', function() {
                         document.querySelectorAll('.tab-button').forEach(t => t.classList.remove('active'));
                         this.classList.add('active');
                         categoryID = null;
-                        languageID = null; // Reset language filter for "All"
-                        fetchAll = true;
-                        languageSelect.value = ''; // Reset dropdown to "All Languages"
+                        // Keep current languageID, don't reset it
+                        fetchAll = false; // Only fetching all categories, not all languages
                         resetAndFetch();
                     });
                     categoryTabs.appendChild(allTab);
 
-                    // Fetch and add other categories
                     const response = await fetch('/api/categories');
                     const categories = await response.json();
                     categories.forEach(cat => {
@@ -105,18 +99,36 @@
                 }
             }
 
-            // Load languages dynamically
+            // Load languages dynamically and set initial state
             async function loadLanguages() {
                 try {
                     const response = await fetch('/api/languages');
                     const languages = await response.json();
+
+                    const allOption = document.createElement('option');
+                    allOption.value = '';
+                    allOption.textContent = 'All Languages';
+                    languageSelect.appendChild(allOption);
+
+                    let hasDefault = false;
                     languages.forEach(lang => {
                         const option = document.createElement('option');
                         option.value = lang.id;
                         option.textContent = lang.name;
                         languageSelect.appendChild(option);
+                        
+                        if (lang.status === 'default') {
+                            option.selected = true;
+                            languageID = lang.id; // Set initial languageID to default
+                            hasDefault = true;
+                        }
                     });
 
+                    // If no default found, select "All Languages"
+                    if (!hasDefault) {
+                        allOption.selected = true;
+                        fetchAll = true; // Fetch all if no default
+                    }
                 } catch (error) {
                     console.error('Error loading languages:', error);
                 }
@@ -197,33 +209,31 @@
             }
 
             // Utility functions
-            function copyText(button) {
-                const textarea = document.getElementById(button.dataset.textarea);
-                textarea.select();
-                document.execCommand('copy');
-                alert('Text copied to clipboard');
-            }
+            // function copyText(button) {
+            //     const textarea = document.getElementById(button.dataset.textarea);
+            //     textarea.select();
+            //     document.execCommand('copy');
+            //     // alert('Text copied to clipboard');
+            // }
 
-            function toggleEdit(button) {
-                const textarea = document.getElementById(button.dataset.textarea);
-                textarea.readOnly = !textarea.readOnly;
-                button.textContent = textarea.readOnly ? 'Edit' : 'Save';
-                // Add save logic here if needed
-            }
+            // function toggleEdit(button) {
+            //     const textarea = document.getElementById(button.dataset.textarea);
+            //     textarea.readOnly = !textarea.readOnly;
+            //     button.textContent = textarea.readOnly ? 'Edit' : 'Save';
+            // }
 
-            function useAsPrompt(button) {
-                const textarea = document.getElementById(button.dataset.textarea);
-                console.log('Using prompt:', textarea.value);
-                // Add your logic to use the prompt
-            }
+            // function useAsPrompt(button) {
+            //     const textarea = document.getElementById(button.dataset.textarea);
+            //     // console.log('Using prompt:', textarea.value);
+            //     window.hideBottomSheet();
+            // }
 
             // Event listeners
             languageSelect.addEventListener('change', function() {
                 languageID = this.value || null;
-                fetchAll = false; // Language filter overrides "All"
+                fetchAll = !this.value; // fetchAll is true only when "All Languages" is selected
                 resetAndFetch();
             });
-
 
             promptScroll.addEventListener('scroll', () => {
                 if (isLoading || !hasNext) return;
@@ -234,9 +244,12 @@
             });
 
             // Initial load
-            loadCategories();
-            loadLanguages();
-            fetchPrompts();
+            async function init() {
+                await loadLanguages(); // Load languages first to set languageID and fetchAll
+                await loadCategories();
+                fetchPrompts(); // Fetch with default language if set
+            }
+            init();
         });
     </script>
 </body>

@@ -1,7 +1,7 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
 from datetime import datetime
-from database import db
+from App.database import db
 import uuid
 import random
 
@@ -25,7 +25,7 @@ class User(db.Model):
     email = db.Column(db.String(100), unique=True, nullable=False)
     password_hash = db.Column(db.String(255), nullable=False)
     picture = db.Column(db.String(255))
-    role = db.Column(db.Integer, default=3, nullable=False)  # Default role is 3 (User)
+    role = db.Column(db.Integer, default=0, nullable=False)  # Default role is 3 (User)
     max_messages = db.Column(db.Integer, default=0, nullable=False)
     registration_type = db.Column(db.String(10), nullable=True)  # 'email', 'google', or 'phone'
     last_login = db.Column(db.DateTime)
@@ -44,9 +44,9 @@ class User(db.Model):
     
     def get_role_name(self):
         role_map = {
+            0: 'User',
             1: 'Admin',
             2: 'Editor',
-            3: 'User'
         }
         return role_map.get(self.role, 'Unknown')
     
@@ -216,8 +216,17 @@ class Language(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     code = db.Column(db.String(10), nullable=False, unique=True)  # Language code (e.g., "en", "es")
     name = db.Column(db.String(50), nullable=False)  # Language name (e.g., "English", "Spanish")
+    status = db.Column(db.String(20), nullable=False, default='active')  # Language status (e.g., "active", "inactive", "default")
     created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
     updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), onupdate=db.func.current_timestamp())
+
+    def set_as_default(self):
+            """Sets this language as the default language"""
+            # First, set all other languages to 'active' status
+            db.session.query(Language).filter(Language.id != self.id).update({'status': 'active'})
+            # Then set this language as 'default'
+            self.status = 'default'
+            db.session.commit()
 
     def __repr__(self):
         return f'<Language {self.name} ({self.code})>'

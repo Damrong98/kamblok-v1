@@ -13,16 +13,21 @@ class Config:
     # SQLALCHEMY_DATABASE_URI = os.getenv('SQLALCHEMY_DATABASE_URI', 'sqlite:///users.db')
     # SQLALCHEMY_TRACK_MODIFICATIONS = False
 
-    # Database configuration for MySQL on localhost
-    DB_USERNAME = os.getenv('DB_USERNAME', 'root')  # Default MySQL user in WAMP
-    DB_PASSWORD = os.getenv('DB_PASSWORD', '')      # Default is empty in WAMP
-    DB_HOST = os.getenv('DB_HOST', 'localhost')     # Localhost
-    DB_PORT = os.getenv('DB_PORT', '3306')          # Default MySQL port
-    DB_NAME = os.getenv('DB_NAME', 'my_database')   # Your database name
+    # Database configuration variables
+    DB_USERNAME = os.getenv('DB_USERNAME', 'root')
+    DB_PASSWORD = os.getenv('DB_PASSWORD', '')
+    DB_HOST = os.getenv('DB_HOST', 'localhost')
+    DB_PORT = os.getenv('DB_PORT', '3306')
+    DB_NAME = os.getenv('DB_NAME', 'my_database')
 
-    SQLALCHEMY_DATABASE_URI = (
-        f'mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}@{DB_HOST}:{DB_PORT}/{DB_NAME}'
+    # Construct the MySQL URI for local fallback
+    MYSQL_URI = (
+        f'mysql+pymysql://{DB_USERNAME}:{DB_PASSWORD}'
+        f'@{DB_HOST}:{DB_PORT}/{DB_NAME}'
     )
+
+    # Use DATABASE_URL from Railway if available, otherwise fallback to MySQL URI
+    SQLALCHEMY_DATABASE_URI = os.getenv('DATABASE_URL') or MYSQL_URI
     SQLALCHEMY_TRACK_MODIFICATIONS = False
     
     # # Database configuration variables for Google Cloud SQL (MySQL)

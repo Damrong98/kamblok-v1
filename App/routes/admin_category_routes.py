@@ -1,21 +1,26 @@
 # admin_category_routes.py
-from flask import Blueprint, render_template, jsonify, request, session, redirect, url_for
+from flask import Blueprint, render_template, jsonify, request, session, redirect, url_for, flash
 # from models.userModel import User
 from App.models.models import User, Prompt, Category
-from database import db
-from utils import login_required  # Import from utils
+from App.database import db
+from utils import login_required, role_required # Import from utils
 
 admin_category_bp = Blueprint('admin_category_routes', __name__)
 
 # Routes
-@admin_category_bp.route('/category')
-def category():
-    return render_template('/admin/category/category.html')
+@admin_category_bp.route('/categories', methods=['GET'])
+@role_required(1,2)
+def categories():
+    page = request.args.get('page', 1, type=int)
+    per_page = 10
+    # pagination = Category.query.paginate(page=page, per_page=per_page)
+    pagination = Category.query.order_by(Category.created_at.desc()).paginate(page=page, per_page=per_page)
+    return render_template('/admin/category/category.html', pagination=pagination)
 
-# Create
-@admin_category_bp.route('/api/categories', methods=['POST'])
+@admin_category_bp.route('/api/category/create', methods=['POST'])
+@role_required(1,2)
 def create_category():
-    data = request.get_json()
+    data = request.json
     try:
         category = Category(
             name=data['name'],
@@ -23,60 +28,39 @@ def create_category():
         )
         db.session.add(category)
         db.session.commit()
-        return jsonify({'message': 'Category created successfully', 'id': category.id}), 201
+        flash('Category created successfully!', 'success')
+        return jsonify({'success': True, 'id': category.id})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        flash(f'Error creating category: {str(e)}', 'danger')
+        return jsonify({'success': False, 'error': str(e)}), 400
 
-# Read all
-@admin_category_bp.route('/api/categories', methods=['GET'])
-def get_categories():
-    categories = Category.query.all()
-    return jsonify([{
-        'id': cat.id,
-        'name': cat.name,
-        'description': cat.description,
-        'created_at': cat.created_at.isoformat(),
-        'updated_at': cat.updated_at.isoformat()
-    } for cat in categories])
-
-# Read one
-@admin_category_bp.route('/api/categories/<id>', methods=['GET'])
-def get_category(id):
-    category = Category.query.get_or_404(id)
-    return jsonify({
-        'id': category.id,
-        'name': category.name,
-        'description': category.description,
-        'created_at': category.created_at.isoformat(),
-        'updated_at': category.updated_at.isoformat()
-    })
-
-# Update
-@admin_category_bp.route('/api/categories/<id>', methods=['PUT'])
+@admin_category_bp.route('/api/category/update/<id>', methods=['POST'])
+@role_required(1)
 def update_category(id):
     category = Category.query.get_or_404(id)
-    data = request.get_json()
+    data = request.json
     try:
         category.name = data['name']
         category.description = data.get('description', category.description)
         db.session.commit()
-        return jsonify({'message': 'Category updated successfully'})
+        flash('Category updated successfully!', 'success')
+        return jsonify({'success': True})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
+        flash(f'Error updating category: {str(e)}', 'danger')
+        return jsonify({'success': False, 'error': str(e)}), 400
 
-# Delete
-@admin_category_bp.route('/api/categories/<id>', methods=['DELETE'])
+@admin_category_bp.route('/api/category/delete/<id>', methods=['POST'])
+@role_required(1)
 def delete_category(id):
     category = Category.query.get_or_404(id)
     try:
         db.session.delete(category)
         db.session.commit()
-        return jsonify({'message': 'Category deleted successfully'})
+        flash('Category deleted successfully!', 'success')
+        return jsonify({'success': True})
     except Exception as e:
         db.session.rollback()
-        return jsonify({'error': str(e)}), 400
-
-if __name__ == '__main__':
-    admin_category_bp.run(debug=True)
+        flash(f'Error deleting category: {str(e)}', 'danger')
+        return jsonify({'success': False, 'error': str(e)}), 400

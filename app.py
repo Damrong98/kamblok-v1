@@ -1,14 +1,14 @@
 # app.py
 from flask import Flask, render_template, session, jsonify
 import os
-from database import db, init_db
+from App.database import db, init_db
 from oauth_config import init_oauth
 from utils import login_required, role_required
 from flask_mail import Mail
 from config import Config
 from flask_migrate import Migrate
 # 
-from App.models.system_settings import SystemSettings
+from App.models.system_settings import SystemSettings, Page
 
 # from App.models import db
 from App.routes.auth import auth_bp
@@ -27,6 +27,9 @@ from App.routes.admin_category_routes import admin_category_bp
 from App.routes.admin_language_routes import admin_language_bp
 from App.routes.admin_prompt_routes import admin_prompt_bp
 from App.routes.admin_system_settings_routes import admin_system_settings_bp
+from App.routes.admin_page_routes import admin_page_bp
+
+from App.seeds.init_system import init_system_settings
 
 # from werkzeug.security import generate_password_hash, check_password_hash
 # print("Hash:", generate_password_hash("admin"))
@@ -74,22 +77,25 @@ app.register_blueprint(admin_category_bp, url_prefix="/admin")
 app.register_blueprint(admin_language_bp, url_prefix="/admin")
 app.register_blueprint(admin_prompt_bp, url_prefix="/admin")
 app.register_blueprint(admin_system_settings_bp, url_prefix="/admin")
+app.register_blueprint(admin_page_bp, url_prefix="/admin")
 
 # Custom 404 error handler
 @app.errorhandler(404)
 def page_not_found(e):
     return render_template('404.html'), 404
 
+# Routes
 @app.route('/home')
 def home():
-    # user_id = session.get('user_id')
-    return render_template("index.html")
+    homepage = Page.query.filter_by(is_homepage=True, is_published=True).first()
+    if not homepage:
+        return "My home page!"
+    return render_template('/admin/pages/home_page.html', page=homepage)
 
-@app.route('/admin')
-@login_required
-@role_required(1)
-def admin():
-    return render_template("admin/index.html")
+@app.route('/page/<slug>')
+def page(slug):
+    page = Page.query.filter_by(slug=slug, is_published=True).first_or_404()
+    return render_template('/admin/pages/page.html', page=page)
 
 
 # Provide google to auth blueprint (optional, if needed)
@@ -98,11 +104,11 @@ auth_google_bp.google = google  # Attach google to the blueprint for use in rout
 # Create database tables
 with app.app_context():
     db.create_all()
-    # create system settings
-    if not SystemSettings.query.first():
-        settings = SystemSettings()
-        db.session.add(settings)
-        db.session.commit()
+    # create database
+    init_system_settings()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
+    # railway
+    port = int(os.getenv("PORT", 5000))  # Default to 5000 locally, use Railway's PORT in production
+    app.run(host="0.0.0.0", port=port, debug=False)  # debug=False for production

@@ -1,5 +1,5 @@
 from App.models.models import UserMessageLimit
-from database import db
+from App.database import db
 from datetime import date
 
 # Assuming this is in your main app file

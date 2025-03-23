@@ -8,7 +8,6 @@
     <link rel="stylesheet" href="{{ url_for('static', filename='css/layout.css') }}">
     {% block style %}{% endblock %}
     <style>
-
         .prompt-card {
             border: 1px solid #e0e0e0;
             border-radius: 8px;
@@ -51,56 +50,18 @@
             {% endblock %}
         </div>
 
-        <!-- Bottom Sheet -->
-        <div id="bottomSheet" class="bottom-sheet d-flex flex-column justify-content-between gap-1">
-            <div class="bottom-sheet-header">
-                <h5 class="bottom-sheet-title">Prompts</h5>
-                <button class="bottom-sheet-close" onclick="window.hideBottomSheet()">×</button>
-            </div>
-            <div id="bottomSheetBody" class="bottom-sheet-body d-flex flex-column flex-grow-1" style="height: 100%;">
-                <!-- <p>This is the bottom sheet content. You can add any HTML elements here.</p>
-                <p>More content can go here. The sheet will scroll if the content exceeds the max-height.</p> -->
-            
-                {% include "prompts/show_prompts.html" %}
-            </div>
-            <!-- <div class="bottom-sheet-footer">
-                <button class="sheet-btn" onclick="window.hideBottomSheet()">Close</button>
-                <button class="sheet-btn sheet-btn-primary">Save</button>
-            </div> -->
-        </div>
-
-        <!-- Overlay -->
-        <div id="sheetOverlay" class="sheet-overlay" onclick="window.hideBottomSheet()"></div>
+        
     </main>
+
+    <!-- Modal (outside .layout_container) -->
+    {% block modal %}
+        
+    {% endblock %}
 
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <!--  -->
     <script src="{{ url_for('static', filename='js/layout.js') }}"></script>
     <script src="{{ url_for('static', filename='js/layout_api.js') }}"></script>
-    <script>
-        // Attach to window object
-        window.bottomSheet = document.getElementById('bottomSheet');
-        window.sheetOverlay = document.getElementById('sheetOverlay');
-
-        window.bottomSheetBody = document.getElementById('bottomSheetBody');
-
-        window.showBottomSheet = function() {
-            window.bottomSheet.classList.add('active');
-            window.sheetOverlay.classList.add('active');
-        };
-
-        window.hideBottomSheet = function() {
-            window.bottomSheet.classList.remove('active');
-            window.sheetOverlay.classList.remove('active');
-        };
-
-        // Close with Escape key
-        document.addEventListener('keydown', function(e) {
-            if (e.key === 'Escape' && window.bottomSheet.classList.contains('active')) {
-                window.hideBottomSheet();
-            }
-        });
-    </script>
 
     {% block script %}{% endblock %}
 

@@ -4,7 +4,7 @@ from flask import Blueprint, request, render_template, redirect, url_for, flash,
 # from models.userModel import User
 from App.models.models import User, UserMessageLimit
 from App.models.system_settings import SystemSettings
-from database import db
+from App.database import db
 from werkzeug.security import check_password_hash
 from utils import login_required
 from authlib.integrations.flask_client import OAuthError
@@ -75,7 +75,6 @@ def google_callback():
         
         # Store user data info in session
         session['user_id'] = user.id
-        # session['user_role'] = user.role
 
         print(f"Session set: user_id={session['user_id']}")
 
