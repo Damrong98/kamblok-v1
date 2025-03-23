@@ -30,7 +30,7 @@ class Config:
     # print(f"Final SQLALCHEMY_DATABASE_URI: {DATABASE_URI}")
 
     # Use DATABASE_URL from Railway if available, otherwise fallback to MySQL URI
-    SQLALCHEMY_DATABASE_URI = os.getenv('MYSQL_URL') or MYSQL_URI
+    SQLALCHEMY_DATABASE_URI = os.getenv('MYSQL_PUBLIC_URL') or MYSQL_URI
     SQLALCHEMY_TRACK_MODIFICATIONS = False
 
     # Mail configuration
