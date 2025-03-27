@@ -17,7 +17,7 @@ auth_google_bp = Blueprint('auth_google_routes', __name__)
 @auth_google_bp.route('/google/login')
 def google_login():
     google = auth_google_bp.google
-    redirect_uri = url_for('auth_google_routes.google_callback', _external=True)
+    redirect_uri = url_for('auth_google_routes.google_callback', _external=True, _scheme='https')
     print("Redirect URI sent to Google:", redirect_uri)  # Debug
     print("Request host:", request.host)  # Add this
     print("Request scheme:", request.scheme)  # Add this
