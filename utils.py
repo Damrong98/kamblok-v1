@@ -7,9 +7,9 @@ def login_required(f):
     @wraps(f)
     def decorated_function(*args, **kwargs):
         if 'user_id' not in session:
-            flash('Please login first', 'error')
-            return redirect(url_for('auth.login'))  # Note: assumes 'auth' Blueprint
-            # return redirect(url_for('home')) 
+            # flash('Please login first', 'error')
+            # return redirect(url_for('auth.login'))  # Note: assumes 'auth' Blueprint
+            return redirect(url_for('home')) 
         return f(*args, **kwargs)
     return decorated_function
 
@@ -19,9 +19,9 @@ def role_required(*allowed_roles):
     """
     Decorator to check if user has one of the required roles
     Roles:
+        0: 'User'
         1: 'Admin'
         2: 'Editor'
-        3: 'User'
     """
     def decorator(f):
         @wraps(f)
@@ -33,9 +33,9 @@ def role_required(*allowed_roles):
             
             # Role mapping
             role_map = {
+                0: 'User',
                 1: 'Admin',
                 2: 'Editor',
-                3: 'User'
             }
             
             # Get user's role from session (assuming it's stored there)

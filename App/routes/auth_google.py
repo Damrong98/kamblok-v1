@@ -19,6 +19,8 @@ def google_login():
     google = auth_google_bp.google
     redirect_uri = url_for('auth_google_routes.google_callback', _external=True)
     print("Redirect URI sent to Google:", redirect_uri)  # Debug
+    print("Request host:", request.host)  # Add this
+    print("Request scheme:", request.scheme)  # Add this
     return google.authorize_redirect(redirect_uri)
 
 @auth_google_bp.route('/google/callback')
