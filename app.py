@@ -1,5 +1,5 @@
 # app.py
-from flask import Flask, render_template, session, jsonify
+from flask import Flask, render_template, session, jsonify, redirect, request
 import os
 from App.database import db, init_db
 from oauth_config import init_oauth
@@ -40,6 +40,11 @@ app = Flask(__name__)
 # app.config['SQLALCHEMY_DATABASE_URI'] = 'sqlite:///users.db'
 # app.config['SQLALCHEMY_TRACK_MODIFICATIONS'] = False
 # app.config['SECRET_KEY'] = os.urandom(24).hex()
+
+@app.before_request
+def force_https():
+    if request.headers.get("X-Forwarded-Proto") == "http":
+        return redirect(request.url.replace("http://", "https://"), code=301)
 
 app.config.from_object(Config)
 
