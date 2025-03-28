@@ -9,7 +9,7 @@ def login_required(f):
         if 'user_id' not in session:
             # flash('Please login first', 'error')
             # return redirect(url_for('auth.login'))  # Note: assumes 'auth' Blueprint
-            return redirect(url_for('home', _external=True, _scheme="https")) 
+            return redirect(url_for('home')) 
         return f(*args, **kwargs)
     return decorated_function
 
@@ -29,7 +29,7 @@ def role_required(*allowed_roles):
             # First check if user is logged in
             if 'user_id' not in session:
                 flash('Please login first', 'error')
-                return redirect(url_for('auth.login', _external=True, _scheme="https"))
+                return redirect(url_for('auth.login'))
             
             # Role mapping
             role_map = {
