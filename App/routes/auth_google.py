@@ -55,6 +55,9 @@ def google_callback():
             user.set_password(os.urandom(16).hex())  # Random password for Google users
             db.session.add(user)
             db.session.commit()
+            # Update system count for Registration
+            SystemSettings.update_registration_count("google")
+
             flash('Registration successful via Google!', 'success')
 
         else:
@@ -78,10 +81,7 @@ def google_callback():
         # Store user data info in session
         session['user_id'] = user.id
 
-        print(f"Session set: user_id={session['user_id']}")
-
-        # Update system count for Registration
-        SystemSettings.update_registration_count("google")
+        # print(f"Session set: user_id={session['user_id']}")
 
         flash('Logged in with Google successfully', 'success')
         return redirect(url_for('user_conversation_routes.user_new_chat'))
