@@ -4,6 +4,12 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>{{ page.meta_title if page.meta_title else page.title }} - My Site</title>
+
+    <!-- SEO Meta Tags -->
+    {% include "layouts/seo_meta_tags.html" %}
+    <!-- Favicon -->
+    <link rel="icon" href="{{ url_for('static', filename='img/favicon_io/favicon.ico') }}" type="image/x-icon">
+
     {% if page.meta_description %}
     <meta name="description" content="{{ page.meta_description }}">
     {% endif %}
@@ -55,9 +61,13 @@
         <div class="header_container">
             <div id="header_left" class="header_left">
                 <div id="logo_header" class="logo_header">
-                    <div class="appLogo">
+                    <!-- <div class="appLogo">
 
-                    </div>
+                    </div> -->
+                    <!-- Logo -->
+                    <a href="#">
+                        <img src="{{ url_for('static', filename='img/kamblok2-black.png') }}" alt="Kamblok" width="150" height="50">
+                    </a>
                 </div>
             </div>
             <div class="header_right">

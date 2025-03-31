@@ -827,7 +827,7 @@ document.addEventListener("DOMContentLoaded", async () => {
             toggleChat();
         }
     });
-    elements.chatInput.addEventListener("click", () => elements.userPrompt.focus());
+    elements.userPrompt.addEventListener("click", () => elements.userPrompt.focus());
 
     elements.chatMessage.addEventListener("scroll", () => {
         const chat = elements.chatMessage;

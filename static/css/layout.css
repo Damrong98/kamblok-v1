@@ -1,9 +1,14 @@
+/* @import url('https://fonts.googleapis.com/css2?family=Siemreap&display=swap'); */
+@import url('https://fonts.googleapis.com/css2?family=Siemreap&family=Roboto:wght@400;700&display=swap');
+
 html, body {
     height: 100%;
     margin: 0;
     padding: 0;
-    
+    font-family: 'Siemreap', 'Roboto', sans-serif;
+    font-weight: 500;
 }
+
 .layout_container{
     display:flex;
     justify-content: space-between;
@@ -18,7 +23,7 @@ html, body {
     position: fixed;
 }
 .sidebar_header{
-    padding: 0 20px;
+    /* padding: 0 20px; */
     display: flex;
     justify-content: space-between;
     align-items: center;
