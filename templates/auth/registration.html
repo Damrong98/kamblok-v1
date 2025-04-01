@@ -1,80 +1,73 @@
 <!-- registration.html -->
-<!DOCTYPE html>
-<html lang="en">
-<head>
-    <meta charset="UTF-8">
-    <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Registration</title>
-    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
-    <link rel="stylesheet" href="{{ url_for('static', filename='css/auth.css') }}">
-    <style>
-       
-    </style>
-</head>
-<body>
-    <div class="auth-container">
-        <!-- Step 1: Enter Email -->
-        <div id="step1" class="step active">
-            <h1 class="text-center">Register - Step 1</h1>
-            <p class="subtitle text-center">Enter your email address</p>
-            <div id="alert-container-step1"></div>
-            <div class="mb-3">
-                <label for="email" class="form-label">Email*</label>
-                <input type="email" class="form-control" id="email" required value="{{ session.get('registration_email', '') }}">
-            </div>
-            <button id="nextStep1" class="btn btn-primary w-100">Next</button>
-            <div class="footer-links">
-                <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
-            </div>
-        </div>
 
-        <!-- Step 2: Verify Email -->
-        <div id="step2" class="step">
-            <h1 class="text-center">Check your inbox</h1>
-            <p class="subtitle text-center">Enter the verification code we sent to <span id="email-display-step2"></span></p>
-            <div id="alert-container-step2"></div>
-            <div class="mb-3">
-                <input type="text" class="form-control" id="email_code" placeholder="Code" required>
-                <div id="countdown" class="countdown text-center">Code expires in: <span id="timer">2:00</span></div>
-            </div>
-            <button id="nextStep2" class="btn btn-success w-100">Next</button>
-            <button id="prevStep2" class="btn btn-secondary w-100">Previous</button>
-            <a id="resendLink" href="#" class="resend-link text-center">Resend email</a>
-            <div class="footer-links">
-                <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
-            </div>
-        </div>
+<!-- register.html -->
+{% extends "auth_layout.html" %}
 
-        <!-- Step 3: Complete Registration -->
-        <div id="step3" class="step">
-            <h1 class="text-center">Complete Registration</h1>
-            <p class="subtitle text-center">Finish setting up your account for <span id="email-display-step3"></span></p>
-            <div id="alert-container-step3"></div>
-            <div class="mb-3">
-                <label for="first_name" class="form-label">First Name*</label>
-                <input type="text" class="form-control" id="first_name" required>
-            </div>
-            <div class="mb-3">
-                <label for="last_name" class="form-label">Last Name*</label>
-                <input type="text" class="form-control" id="last_name" required>
-            </div>
-            <div class="mb-3">
-                <label for="password" class="form-label">Password*</label>
-                <input type="password" class="form-control" id="password" required>
-            </div>
-            <div class="mb-3">
-                <label for="confirm_password" class="form-label">Confirm Password*</label>
-                <input type="password" class="form-control" id="confirm_password" required>
-            </div>
-            <button id="submitStep3" class="btn btn-primary w-100">Register</button>
-            <button id="prevStep3" class="btn btn-secondary w-100">Previous</button>
-            <div class="footer-links">
-                <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
-            </div>
-        </div>
+{% block title %}Kamblok - Register{% endblock %}
+
+{% block content %}
+<!-- Step 1: Enter Email -->
+<div id="step1" class="step active">
+    <h1 class="text-center">Register - Step 1</h1>
+    <p class="subtitle text-center">Enter your email address</p>
+    <div id="alert-container-step1"></div>
+    <div class="mb-3">
+        <label for="email" class="form-label">Email*</label>
+        <input type="email" class="form-control" id="email" required value="{{ session.get('registration_email', '') }}">
     </div>
+    <button id="nextStep1" class="btn btn-primary w-100">Next</button>
+    <div class="footer-links">
+        <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
+    </div>
+</div>
 
-    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+<!-- Step 2: Verify Email -->
+<div id="step2" class="step">
+    <h1 class="text-center">Check your inbox</h1>
+    <p class="subtitle text-center">Enter the verification code we sent to <span id="email-display-step2"></span></p>
+    <div id="alert-container-step2"></div>
+    <div class="mb-3">
+        <input type="text" class="form-control" id="email_code" placeholder="Code" required>
+        <div id="countdown" class="countdown text-center">Code expires in: <span id="timer">2:00</span></div>
+    </div>
+    <button id="nextStep2" class="btn btn-success w-100">Next</button>
+    <button id="prevStep2" class="btn btn-secondary w-100">Previous</button>
+    <a id="resendLink" href="#" class="resend-link text-center">Resend email</a>
+    <div class="footer-links">
+        <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
+    </div>
+</div>
+
+<!-- Step 3: Complete Registration -->
+<div id="step3" class="step">
+    <h1 class="text-center">Complete Registration</h1>
+    <p class="subtitle text-center">Finish setting up your account for <span id="email-display-step3"></span></p>
+    <div id="alert-container-step3"></div>
+    <div class="mb-3">
+        <label for="first_name" class="form-label">First Name*</label>
+        <input type="text" class="form-control" id="first_name" required>
+    </div>
+    <div class="mb-3">
+        <label for="last_name" class="form-label">Last Name*</label>
+        <input type="text" class="form-control" id="last_name" required>
+    </div>
+    <div class="mb-3">
+        <label for="password" class="form-label">Password*</label>
+        <input type="password" class="form-control" id="password" required>
+    </div>
+    <div class="mb-3">
+        <label for="confirm_password" class="form-label">Confirm Password*</label>
+        <input type="password" class="form-control" id="confirm_password" required>
+    </div>
+    <button id="submitStep3" class="btn btn-primary w-100">Register</button>
+    <button id="prevStep3" class="btn btn-secondary w-100">Previous</button>
+    <div class="footer-links">
+        <a href="#">Terms of Use</a> | <a href="#">Privacy Policy</a>
+    </div>
+</div>
+{% endblock %}
+
+{% block script %} 
     <script>
         const registerEmailApi = '{{ url_for("auth_email.register_email_api") }}';
         const sendCodeUrl = '{{ url_for("auth_email.send_verification_code") }}';
@@ -294,5 +287,4 @@
             document.getElementById('email-display-step3').textContent = email;
         }
     </script>
-</body>
-</html>
+{% endblock %}

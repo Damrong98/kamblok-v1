@@ -353,6 +353,7 @@ async function toggleChat() {
             alertDiv.innerHTML=`
                 <div>
                     <strong>Oops!</strong> You've reached your daily message limit for today.
+                    <div id="countdownSend"></div>
                 </div>
                 <a href="/page/upgrade" class="btn btn-primary btn-sm">
                     Upgrade Now

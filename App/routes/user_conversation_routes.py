@@ -22,12 +22,14 @@ Return: render_template
 @login_required
 def user_new_chat():
     clear_model_chat_history()
-    return render_template("messages/user_messages.html", conversation_id="")
+    return render_template("messages/user_messages.html", conversation_id="", title="New chat")
 
 @user_conversation_bp.route("/chat/<conversation_id>")
 @login_required
 def user_existed_chat(conversation_id):
-    return render_template("messages/user_messages.html", conversation_id=conversation_id)
+    conversation = Conversation.query.get(conversation_id)
+    title = conversation.title
+    return render_template("messages/user_messages.html", conversation_id=conversation_id, title=title)
 
 """
 Route: API

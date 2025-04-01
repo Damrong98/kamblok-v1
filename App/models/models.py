@@ -1,6 +1,6 @@
 from flask_sqlalchemy import SQLAlchemy
 from werkzeug.security import generate_password_hash, check_password_hash
-from datetime import datetime
+from datetime import datetime, timezone, timedelta
 from App.database import db
 import uuid
 import random
@@ -137,37 +137,46 @@ class UserMessageLimit(db.Model):
     id = db.Column(db.String(36), primary_key=True, default=lambda: str(uuid.uuid4()))
     user_id = db.Column(db.String(36), db.ForeignKey('users.id', ondelete='CASCADE'), nullable=False)
     message_count = db.Column(db.Integer, default=0, nullable=False)
-    date = db.Column(db.Date, default=db.func.current_date(), nullable=False)
-    created_at = db.Column(db.DateTime, default=db.func.current_timestamp())
-    updated_at = db.Column(db.DateTime, default=db.func.current_timestamp(), 
-                           onupdate=db.func.current_timestamp())
+    reset_time = db.Column(db.DateTime(timezone=True), default=lambda: datetime.now(timezone.utc) + timedelta(hours=6), nullable=False)
+    created_at = db.Column(db.DateTime(timezone=True), default=db.func.current_timestamp())
+    updated_at = db.Column(db.DateTime(timezone=True), default=db.func.current_timestamp(), 
+                          onupdate=db.func.current_timestamp())
 
     # Relationships
     user = db.relationship("User", backref="message_limits")
 
     # Ensure unique constraint for one record per user per day
+    # __table_args__ = (
+    #     db.UniqueConstraint('user_id', 'date', name='uq_user_date'),
+    # )
+
+    # Unique constraint for one record per user
     __table_args__ = (
-        db.UniqueConstraint('user_id', 'date', name='uq_user_date'),
+        db.UniqueConstraint('user_id', name='uq_user'),
     )
 
     def __repr__(self):
-        return f'<UserMessageLimit for User {self.user_id} on {self.date}: {self.message_count}/10>'
+        return f'<UserMessageLimit for User {self.user_id} until {self.reset_time}: {self.message_count}/10>'
 
-    # Method to check if user can send more messages
-    # def can_send_message(self):
-    #     return self.message_count < self.user.max_messages  # Updated to use user's max_messages
-    
     def can_send_message(self):
-        system_settings = db.session.query(SystemSettings).first()  # Get system settings
+        system_settings = db.session.query(SystemSettings).first()
         system_max_messages = system_settings.max_messages if system_settings else 0
         return self.message_count < (self.user.max_messages + system_max_messages)
 
-    # Method to increment message count
     def increment_count(self):
         if self.can_send_message():
             self.message_count += 1
             return True
         return False
+
+    def get_remaining_seconds(self):
+        now = datetime.now(timezone.utc)
+        reset_time = self.reset_time
+        if reset_time.tzinfo is None:
+            reset_time = reset_time.replace(tzinfo=timezone.utc)
+        if now >= reset_time:
+            return 0
+        return (reset_time - now).total_seconds()
     
 """
 Prompts

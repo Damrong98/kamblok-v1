@@ -5,25 +5,25 @@
  */
     // Fetch logo_html from Flask API
 
-function getLogoAndCssFromSystemSettings() {
-    fetch("/admin/api/system_settings/get_logoAndCSS")
-        .then(response => response.json())
-        .then(data => {
-            if (data.logo_html) {
-                document.querySelectorAll(".appLogo").forEach(element => {
-                    element.innerHTML = data.logo_html;
-                });
-            }
-            if (data.custom_css) {
-                const styleElement = document.createElement("style");
-                styleElement.textContent = data.custom_css;
-                document.head.appendChild(styleElement);
-            }
-        })
-        .catch(error => console.error("Error fetching settings:", error));
-}
+// function getLogoAndCssFromSystemSettings() {
+//     fetch("/admin/api/system_settings/get_logoAndCSS")
+//         .then(response => response.json())
+//         .then(data => {
+//             if (data.logo_html) {
+//                 document.querySelectorAll(".appLogo").forEach(element => {
+//                     element.innerHTML = data.logo_html;
+//                 });
+//             }
+//             if (data.custom_css) {
+//                 const styleElement = document.createElement("style");
+//                 styleElement.textContent = data.custom_css;
+//                 document.head.appendChild(styleElement);
+//             }
+//         })
+//         .catch(error => console.error("Error fetching settings:", error));
+// }
 
-document.addEventListener("DOMContentLoaded", getLogoAndCssFromSystemSettings);
+// document.addEventListener("DOMContentLoaded", getLogoAndCssFromSystemSettings);
  
       
     
@@ -74,10 +74,9 @@ function displayUserData(user) {
 
     // Display data
     userLimitDiv.innerHTML = `
-        <button class="btn btn-sm btn-danger">
-            <span id="userMessageLimit">${user.message_limit}</span>
-            /${user.max_messages_today}
-        </button>`;
+    <span id="userMessageLimit">${user.message_limit}</span>
+    /${user.max_messages_today}
+     <span style="font-size: 0.8em;">Credits</span>`;
 
     currentUserName.innerHTML = `<h5>${user.displayName}</h5>`;
     
@@ -315,3 +314,55 @@ document.querySelectorAll('.conversation-item').forEach(item => {
         this.classList.add('focused');
     });
 });
+
+
+
+
+
+// Fetch data from API when page loads
+function fetchMessageLimit() {
+    fetch('/api/message_limit')
+        .then(response => response.json())
+        .then(data => {
+            let remainingSeconds = data.remaining_seconds;
+            document.getElementById('message_count').textContent = data.message_count;
+
+            function updateCountdown() {
+                if (remainingSeconds <= 0) {
+                    document.getElementById('countdownMessageLimit').innerHTML = "Message limit has been reset!";
+                    setTimeout(() => location.reload(), 1000);
+                    return;
+                }
+
+                const hours = Math.floor(remainingSeconds / 3600);
+                const minutes = Math.floor((remainingSeconds % 3600) / 60);
+                const seconds = Math.floor(remainingSeconds % 60);
+
+                document.getElementById('countdownMessageLimit').innerHTML = 
+                    `Messages reset in: ${hours}h ${minutes}m ${seconds}s`;
+
+                if (document.getElementById('countdownSend')) {
+                    
+                    document.getElementById('countdownSend').innerHTML = 
+                        `Your message will be reset in: ${hours}h ${minutes}m ${seconds}s`;
+                }
+                
+                remainingSeconds--;
+                setTimeout(updateCountdown, 1000);
+            }
+
+            if (remainingSeconds > 0) {
+                updateCountdown();
+            } else {
+                // document.getElementById('countdownMessageLimit').innerHTML = "Message limit has been reset!";
+                document.getElementById('countdownMessageLimit').innerHTML = "Free to use!";
+            }
+        })
+        .catch(error => {
+            console.error('Error fetching message limit:', error);
+            document.getElementById('message_count').textContent = 'Error';
+            document.getElementById('countdownMessageLimit').innerHTML = 'Error loading countdown';
+        });
+}
+
+window.addEventListener("load", fetchMessageLimit);

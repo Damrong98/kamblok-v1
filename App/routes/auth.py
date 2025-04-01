@@ -5,24 +5,50 @@ from App.models.models import User, UserMessageLimit
 from App.models.system_settings import SystemSettings
 from App.database import db
 from utils import login_required
-from datetime import date, datetime
+from datetime import date, datetime, timezone
 
 auth_bp = Blueprint('auth', __name__)
 
+# def get_user_message_limit(user_id):
+#     today = date.today()
+    
+#     # Query the user's message limit for today
+#     limit = UserMessageLimit.query.filter_by(
+#         user_id=user_id,
+#         date=today
+#     ).first()
+    
+#     # If no record exists for today, they haven't sent any messages yet
+#     if not limit:
+#         return 0  # 0 messages sent out of 10
+    
+#     return limit.message_count  # Return current count out of 10
+
+from datetime import datetime, timezone
+
 def get_user_message_limit(user_id):
-    today = date.today()
-    
-    # Query the user's message limit for today
-    limit = UserMessageLimit.query.filter_by(
-        user_id=user_id,
-        date=today
-    ).first()
-    
-    # If no record exists for today, they haven't sent any messages yet
-    if not limit:
-        return 0  # 0 messages sent out of 10
-    
-    return limit.message_count  # Return current count out of 10
+    try:
+        # Get the user's current message limit record
+        limit = UserMessageLimit.query.filter_by(user_id=user_id).first()
+        
+        # If no record exists, they haven't sent any messages yet
+        if not limit:
+            return 0
+        
+        # Ensure reset_time is timezone-aware (assume UTC if naive)
+        reset_time = limit.reset_time
+        if reset_time.tzinfo is None:
+            reset_time = reset_time.replace(tzinfo=timezone.utc)
+        
+        # Check if the reset time has passed
+        now = datetime.now(timezone.utc)
+        if now >= reset_time:
+            return 0  # Reset period has passed, so count is effectively 0
+        
+        return limit.message_count  # Return current count
+    except Exception as e:
+        print(f"Error in get_user_message_limit: {str(e)}")
+        return 0  # Return 0 as a fallback in case of error
 
 
 # View route (GET)
@@ -139,37 +165,39 @@ Return: jsonify
 @auth_bp.route('/api/auth', methods=['GET'])
 @login_required
 def get_auth_api():
-    # Get the current user from session
-    current_user = User.query.get(session['user_id'])
-    user_role = session.get('user_role')
+    try:
+        # Get the current user from session
+        current_user = User.query.get(session['user_id'])
 
-    if current_user is None:
-        return jsonify({'status': 'error', 'message': 'User not found'}), 404
-    
-    message_limit = get_user_message_limit(current_user.id)
+        if current_user is None:
+            return jsonify({'status': 'error', 'message': 'User not found'}), 404
+        
+        message_limit = get_user_message_limit(current_user.id)
 
-    system_settings = SystemSettings.query.first()
+        system_settings = SystemSettings.query.first()
 
-    max_messages_today = current_user.max_messages + system_settings.max_messages
-    
-    # Use session['user_picture'] if available, otherwise fall back to current_user.picture
-    # final_picture = picture if picture is not None else current_user.picture #no need, set login picture to sesion instead
-    
-    user_data = {
-        'id': current_user.id,
-        'displayName' : current_user.first_name + " " + current_user.last_name,
-        'username': current_user.username,
-        'email': current_user.email,
-        'picture': current_user.picture, 
-        'role' : user_role,
-        'max_messages' : current_user.max_messages,
-        'max_messages_today' : max_messages_today,
-        'message_limit' : message_limit,
-        'created_at': current_user.created_at.isoformat() if current_user.created_at else None
-    }
-    
-    # Return JSON response
-    return jsonify({
-        'status': 'success',
-        'user': user_data
-    })
+        max_messages_today = current_user.max_messages + system_settings.max_messages
+        
+        # Use session['user_picture'] if available, otherwise fall back to current_user.picture
+        # final_picture = picture if picture is not None else current_user.picture #no need, set login picture to sesion instead
+        
+        user_data = {
+            'id': current_user.id,
+            'displayName' : current_user.first_name + " " + current_user.last_name,
+            'username': current_user.username,
+            'email': current_user.email,
+            'picture': current_user.picture, 
+            'role' : current_user.role,
+            'max_messages' : current_user.max_messages,
+            'max_messages_today' : max_messages_today,
+            'message_limit' : message_limit,
+            'created_at': current_user.created_at.isoformat() if current_user.created_at else None
+        }
+        
+        # Return JSON response
+        return jsonify({
+            'status': 'success',
+            'user': user_data
+        })
+    except Exception as e:
+        print("Auth Error:", e)
