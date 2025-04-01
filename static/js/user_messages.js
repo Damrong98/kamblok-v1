@@ -702,7 +702,7 @@ async function updateConversationTitle(conversationId, newPrompt) {
             // document.getElementById("titleResult").innerHTML = `<h2>${data.title}</h2>`;
             const addNewChatFromLayout = document.getElementById('addNewChat');
             addNewChatFromLayout.innerHTML = `
-                <div class="pb-2">New chat</div>
+                <div class="pb-2 mt-4">New chat</div>
                 <div class="conversation-item">
                     <a href="/chat/${data.id}">${data.title}</a>
                 </div>
