@@ -1,0 +1,265 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Kamblok - AI for Education</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body, html {
+            height: 100%;
+            margin: 0;
+            background: linear-gradient(to bottom, #e3f2fd, #bbdefb);
+            font-family: Arial, sans-serif;
+            display: flex;
+            flex-direction: column;
+        }
+
+        .hero {
+            min-height: 100vh;
+            display: flex;
+            flex-direction: column;
+            justify-content: center;
+            align-items: center;
+            padding: 50px 20px;
+            background: url('https://encrypted-tbn0.gstatic.com/images?q=tbn:ANd9GcQ6grLVXJ8urLdHBRlAgUfovtkNTQ75URfRQg&s') no-repeat center center;
+            background-size: cover;
+            color: white;
+            position: relative;
+        }
+
+        .hero::before {
+            content: '';
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background: rgba(0, 0, 0, 0.4);
+            z-index: 1;
+        }
+
+        .hero > * {
+            position: relative;
+            z-index: 2;
+        }
+
+        .navbar {
+            transition: background-color 0.3s ease;
+            background: rgba(255, 255, 255, 0.1);
+            backdrop-filter: blur(5px);
+        }
+
+        .navbar.scrolled {
+            background: rgba(255, 255, 255, 0.9);
+            box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+        }
+
+        .navbar .nav-link {
+            color: white !important; /* White text by default */
+            transition: color 0.3s ease;
+        }
+
+        .navbar.scrolled .nav-link {
+            color: black !important; /* Black text when scrolled */
+        }
+
+        .navbar .btn-primary {
+            color: white !important; /* Ensure button text stays white */
+        }
+
+        .navbar-brand img.white-logo {
+            display: block;
+        }
+
+        .navbar-brand img.black-logo {
+            display: none;
+        }
+
+        .navbar.scrolled .navbar-brand img.white-logo {
+            display: none;
+        }
+
+        .navbar.scrolled .navbar-brand img.black-logo {
+            display: block;
+        }
+
+        .card {
+            border-radius: 15px;
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.2);
+            margin-bottom: 20px;
+        }
+
+        footer {
+            padding: 20px;
+            background: #0d47a1;
+            color: white;
+        }
+
+        .btn-primary {
+            background: #0d47a1;
+            border: none;
+        }
+
+        .btn-primary:hover {
+            background: #1565c0;
+        }
+
+        section {
+            padding: 100px 0;
+        }
+
+        .container {
+            max-width: 1080px;
+        }
+
+        .team-member img {
+            width: 120px;
+            height: 120px;
+            border-radius: 50%;
+            object-fit: cover;
+            margin-bottom: 15px;
+        }
+
+        .team-member {
+            margin-bottom: 30px;
+        }
+    </style>
+</head>
+<body>
+    <nav class="navbar navbar-expand-lg navbar-light py-2 fixed-top">
+        <div class="container">
+            <a href="#" class="navbar-brand">
+                <img src="{{ url_for('static', filename='img/kamblok2.png') }}" alt="Kamblok" width="auto" height="40" class="white-logo">
+                <img src="{{ url_for('static', filename='img/kamblok2-black.png') }}" alt="Kamblok" width="auto" height="40" class="black-logo">
+            </a>
+            <button class="navbar-toggler" type="button" data-bs-toggle="collapse" data-bs-target="#navbarNav" aria-controls="navbarNav" aria-expanded="false" aria-label="Toggle navigation">
+                <span class="navbar-toggler-icon"></span>
+            </button>
+            <div class="collapse navbar-collapse" id="navbarNav">
+                <ul class="navbar-nav ms-auto">
+                    <li class="nav-item"><a class="nav-link" href="#">Home</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#features">Features</a></li>
+                    <li class="nav-item"><a class="nav-link" href="#about-us">About us</a></li>
+                    <li class="nav-item ms-2"><a class="btn btn-primary text-white" href="https://kamblok.com/chat">Try Kamblok</a></li>
+                </ul>
+            </div>
+        </div>
+    </nav>
+    
+    <header class="hero">
+        <h1 class="display-4">Kamblok</h1>
+        <p class="lead">Your AI-powered assistant for education</p>
+        <a href="https://kamblok.com/chat" class="btn btn-primary btn-lg">Get Started</a>
+    </header>
+    
+    <!-- Rest of your HTML remains the same -->
+    <section id="about" class="bg-info">
+        <div class="container text-center" style="max-width: 920px;">
+            <h2 class="pb-4">What is Kamblok?</h2>
+            <p>Kamblok is an AI-powered text generator designed for education. It helps teachers create lesson plans, students write essays, and anyone explore creative ideas—all for free!</p>
+        </div>
+    </section>
+
+    <section id="features" class="bg-light">
+        <div class="container">
+            <h2 class="pb-4">Features</h2>
+            <div class="row">
+                <div class="col-md-4">
+                    <div class="card p-4">
+                        <h5>AI for Education</h5>
+                        <p>Kamblok generates fast, accurate, and creative text for educational purposes, making it perfect for classrooms and projects.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4">
+                        <h5>Free & Easy to Use</h5>
+                        <p>Kamblok is free, simple to use, and built to save time while sparking creativity for students and teachers alike.</p>
+                    </div>
+                </div>
+                <div class="col-md-4">
+                    <div class="card p-4">
+                        <h5>Creative Writing Support</h5>
+                        <p>Kamblok helps users write essays, brainstorm ideas, and enhance their storytelling abilities effortlessly.</p>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <section id="about-us" class="bg-white">
+        <div class="container">
+            <h2 class="pb-4 text-center">About Us</h2>
+            <p class="text-center mb-5">Meet the team behind Kamblok, dedicated to revolutionizing education through AI technology.</p>
+            <div class="row text-center">
+                <div class="col-md-4 col-sm-6 team-member">
+                    <img src="{{ url_for('static', filename='img/team/roth.jpg') }}" alt="រស់ សុជាតិរតន៍">
+                    <h5>រស់ សុជាតិរតន៍</h5>
+                    <p>ប្រធានក្រុម (Team Leader)</p>
+                </div>
+                <div class="col-md-4 col-sm-6 team-member">
+                    <img src="{{ url_for('static', filename='img/team/sophy.jpg') }}" alt="ប៉ា សុភី">
+                    <h5>ប៉ា សុភី</h5>
+                    <p>អនុប្រធានក្រុម (Deputy Team Leader)</p>
+                </div>
+                <div class="col-md-4 col-sm-6 team-member">
+                    <img src="{{ url_for('static', filename='img/team/pheak.jpg') }}" alt="ឡុង ភ័ក្ដ្រ">
+                    <h5>ឡុង ភ័ក្ដ្រ</h5>
+                    <p>សមាជិក (Member)</p>
+                </div>
+                <div class="col-md-4 col-sm-6 team-member">
+                    <img src="{{ url_for('static', filename='img/team/piseth.jpg') }}" alt="ឡាយ ពិសិទ្ធ">
+                    <h5>ឡាយ ពិសិទ្ធ</h5>
+                    <p>សមាជិក (Member)</p>
+                </div>
+                <div class="col-md-4 col-sm-6 team-member">
+                    <img src="{{ url_for('static', filename='img/team/vong.jpg') }}" alt="ឡោម មនីវង្ស">
+                    <h5>ឡោម មនីវង្ស</h5>
+                    <p>សមាជិក (Member)</p>
+                </div>
+                <div class="col-md-4 col-sm-6 team-member">
+                    <img src="{{ url_for('static', filename='img/team/nak.jpg') }}" alt="ភាន រតនៈ">
+                    <h5>ភាន រតនៈ</h5>
+                    <p>សមាជិក (Member)</p>
+                </div>
+                <div class="col-md-4 col-sm-6 team-member">
+                    <img src="{{ url_for('static', filename='img/team/chumno.jpg') }}" alt="សាង ជំនោរ">
+                    <h5>សាង ជំនោរ</h5>
+                    <p>សមាជិក (Member)</p>
+                </div>
+                <div class="col-md-4 col-sm-6 team-member">
+                    <img src="{{ url_for('static', filename='img/team/damrong.jpg') }}" alt="ហល់ ដំរ៉ុង">
+                    <h5>ហល់ ដំរ៉ុង</h5>
+                    <p>សមាជិក (Member &Developer)</p>
+                </div>
+                <div class="col-md-4 col-sm-6 team-member">
+                    <img src="{{ url_for('static', filename='img/team/socheat.jpg') }}" alt="ជីន សុជាតិ">
+                    <h5>ជីន សុជាតិ</h5>
+                    <p>សមាជិក (Member &Designer)</p>
+                </div>
+                <div class="col-md-4 col-sm-6 team-member">
+                    <img src="{{ url_for('static', filename='img/team/samsem.jpg') }}" alt="ពេជ្រ សាមសិម">
+                    <h5>ពេជ្រ សាមសិម</h5>
+                    <p>សមាជិក (Member)</p>
+                </div>
+            </div>
+        </div>
+    </section>
+    
+    <footer class="text-center">
+        <p>© 2025 Kamblok. All rights reserved.</p>
+    </footer>
+    
+    <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
+    <script>
+        window.addEventListener('scroll', function() {
+            const navbar = document.querySelector('.navbar');
+            if (window.scrollY > 50) {
+                navbar.classList.add('scrolled');
+            } else {
+                navbar.classList.remove('scrolled');
+            }
+        });
+    </script>
+</body>
+</html>

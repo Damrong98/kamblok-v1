@@ -114,7 +114,7 @@ with app.app_context():
     init_system_settings()
 
 if __name__ == '__main__':
-    app.run(debug=True)
+    # app.run(debug=True)
     # railway
     port = int(os.getenv("PORT", 5000))  # Default to 5000 locally, use Railway's PORT in production
     app.run(host="0.0.0.0", port=port, debug=False)  # debug=False for production
