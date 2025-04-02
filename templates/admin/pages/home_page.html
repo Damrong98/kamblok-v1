@@ -152,7 +152,12 @@
                     <li class="nav-item"><a class="nav-link" href="#">ទំព័រដើម</a></li>
                     <li class="nav-item"><a class="nav-link" href="#features">លក្ខណៈពិសេស</a></li>
                     <li class="nav-item"><a class="nav-link" href="#about-us">អំពីយើង</a></li>
-                    <li class="nav-item ms-2"><a class="btn btn-primary text-white" href="https://kamblok.com">សាកល្បង Kamblok</a></li>
+
+                    {% if 'user_id' in session %}
+                    <li class="nav-item ms-2"><a class="btn btn-primary text-white" href="{{ url_for('user_conversation_routes.user_new_chat') }}">ចាប់ផ្តើម Chat</a></li>
+                    {% else %}
+                    <li class="nav-item ms-2"><a class="btn btn-warning text-white" href="{{ url_for('auth.login') }}">សាកល្បង Kamblok</a></li>
+                    {% endif %}
                 </ul>
             </div>
         </div>
@@ -161,7 +166,11 @@
     <header class="hero">
         <h1 class="display-4">សូមស្វាគមន៍មកាន់ Kamblok AI</h1>
         <p class="lead">ជំនួយការដ៏ល្អបំផុតសម្រាប់ការបង្រៀន និងរៀន</p>
-        <a href="https://kamblok.com" class="btn btn-primary btn-lg">ចាប់ផ្តើម</a>
+        {% if 'user_id' in session %}
+        <a class="btn btn-primary btn-lg text-white" href="{{ url_for('user_conversation_routes.user_new_chat') }}">ចាប់ផ្តើម Chat</a></li>
+        {% else %}
+        <a class="btn btn-warning btn-lg text-white" href="{{ url_for('auth.login') }}">សាកល្បង Kamblok</a></li>
+        {% endif %}
     </header>
     
     <section id="about" class="bg-info">
