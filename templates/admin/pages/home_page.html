@@ -29,7 +29,7 @@
             justify-content: center;
             align-items: center;
             padding: 50px 20px;
-            background: url("{{ url_for('static', filename='img/bg/hero.jpg') }}") no-repeat center center;
+            background: url("{{ url_for('static', filename='img/bg/kamblok_banner2.png') }}") no-repeat center center;
             background-size: cover;
             color: white;
             position: relative;
@@ -154,7 +154,7 @@
                     <li class="nav-item"><a class="nav-link" href="#about-us">អំពីយើង</a></li>
 
                     {% if 'user_id' in session %}
-                    <li class="nav-item ms-2"><a class="btn btn-primary text-white" href="{{ url_for('user_conversation_routes.user_new_chat') }}">ចាប់ផ្តើម Chat</a></li>
+                    <li class="nav-item ms-2"><a class="btn text-white" style="background-color: #0662a5;" href="{{ url_for('user_conversation_routes.user_new_chat') }}">ចាប់ផ្តើម Chat</a></li>
                     {% else %}
                     <li class="nav-item ms-2"><a class="btn btn-danger text-white" href="{{ url_for('auth.login') }}">សាកល្បង Kamblok</a></li>
                     {% endif %}
@@ -164,10 +164,10 @@
     </nav>
     
     <header class="hero">
-        <h1 class="display-4">សូមស្វាគមន៍មកាន់ Kamblok AI</h1>
+        <h1 class="display-4">សូមស្វាគមន៍មកកាន់ Kamblok AI</h1>
         <p class="lead">ជំនួយការដ៏ល្អបំផុតសម្រាប់ការបង្រៀន និងរៀន</p>
         {% if 'user_id' in session %}
-        <a class="btn btn-primary btn-lg text-white" href="{{ url_for('user_conversation_routes.user_new_chat') }}">ចាប់ផ្តើម Chat</a></li>
+        <a class="btn btn-lg text-white" style="background-color: #0662a5;" href="{{ url_for('user_conversation_routes.user_new_chat') }}">ចាប់ផ្តើម Chat</a></li>
         {% else %}
         <a class="btn btn-danger btn-lg text-white" href="{{ url_for('auth.login') }}">សាកល្បង Kamblok</a></li>
         {% endif %}
