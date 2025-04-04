@@ -155,7 +155,8 @@ def logout():
     session.pop('user_id', None)
     session.pop('user_role', None)
     flash('You have been logged out', 'success')
-    return redirect(url_for('auth.login'))
+    # return redirect(url_for('auth.login'))
+    return redirect(url_for('home')) 
 
 """
 Route: API
