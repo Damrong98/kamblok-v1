@@ -52,6 +52,7 @@ let model_api = [
     // { name: "Gemini 1.0 Flash", modelValue: "gemini-1.5-flash", active: false },
     // { name: "DeepSeek-R1", modelValue: "deepseek-ai/DeepSeek-R1", active: false },
     // { name: "Quen", modelValue: "Qwen/QwQ-32B", active: false },
+    // { name: "Kamblok Beta", modelValue: "tunedModels/kamblok-beta-1-uw6tuf6uuvch", active: false },
 ];
 
 // Global function to access model_api data
