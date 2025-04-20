@@ -106,7 +106,7 @@ def page(slug):
 
 # developer mode
 @app.route('/info')
-def home():
+def info():
     return render_template('developerMode.html')
 
 
