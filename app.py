@@ -98,10 +98,16 @@ def home():
         return "My home page!"
     return render_template('/admin/pages/home_page.html', page=homepage)
 
+
 @app.route('/page/<slug>')
 def page(slug):
     page = Page.query.filter_by(slug=slug, is_published=True).first_or_404()
     return render_template('/admin/pages/page.html', page=page)
+
+# developer mode
+@app.route('/info')
+def home():
+    return render_template('developerMode.html')
 
 
 # Provide google to auth blueprint (optional, if needed)

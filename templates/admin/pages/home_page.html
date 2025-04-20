@@ -156,7 +156,7 @@
                     {% if 'user_id' in session %}
                     <li class="nav-item ms-2"><a class="btn text-white" style="background-color: #0662a5;" href="{{ url_for('user_conversation_routes.user_new_chat') }}">ចាប់ផ្តើម Chat</a></li>
                     {% else %}
-                    <li class="nav-item ms-2"><a class="btn btn-danger text-white" href="{{ url_for('auth.login') }}">សាកល្បង Kamblok</a></li>
+                    <li class="nav-item ms-2"><a class="btn btn-danger text-white" href="{{ url_for('info') }}">សាកល្បង Kamblok</a></li>
                     {% endif %}
                 </ul>
             </div>
@@ -169,7 +169,7 @@
         {% if 'user_id' in session %}
         <a class="btn btn-lg text-white" style="background-color: #0662a5;" href="{{ url_for('user_conversation_routes.user_new_chat') }}">ចាប់ផ្តើម Chat</a></li>
         {% else %}
-        <a class="btn btn-danger btn-lg text-white" href="{{ url_for('auth.login') }}">សាកល្បង Kamblok</a></li>
+        <a class="btn btn-danger btn-lg text-white" href="{{ url_for('info') }}">សាកល្បង Kamblok</a></li>
         {% endif %}
     </header>
     
